@@ -43,26 +43,8 @@ void SpriteRenderer::Draw(std::shared_ptr<Camera> camera)
 	
 	// get the transform of this renderer's parent
 	Transform spriteTransform = parentEntity->transform;
-
-	//glm::mat4 view(1.0f);
-	
-	//OrthoCamera cam(800.0f, 800.0f);
-
-	//cam.viewTransform.position.x -= 200.0f;
-	//cam.viewTransform.position.y -= 200.0f;
-
-	//cam.viewTransform.rotation.z = 22.5f;
-	//cam.viewTransform.size = glm::vec3(2.0f,2.0f,1.0f);
 	glm::mat4 view = camera->GetViewMatrix();
-	//view = glm::translate(view, glm::vec3(0.0f, 0.0f, -1.0f)); // camera pos
 	shaderProgram->SetMatrix4("view", view);
-	// get the current viewport settings 
-	/*int curViewport[4];
-	glGetIntegerv(GL_VIEWPORT, curViewport);*/
-
-	// normalised values are from -1 to 1 which is a total distance of 2, therefore	1 global unit is worth 2 pixels.
-	// in order to convert from local coordinates to global you multiply viewport by 2 to make 1 global unit worth 1 local pirxel
-	//glm::mat4 projection = glm::ortho(0.0f, 800.0f*2.0f, 0.0f, 800.0f*2.0f, 0.0f, 1.0f);
 
 	glm::mat4 projection = camera->GetProjectionMatrix();
 	shaderProgram->SetMatrix4("projection", projection);

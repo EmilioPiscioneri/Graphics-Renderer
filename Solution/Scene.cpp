@@ -1,6 +1,6 @@
 #include "Scene.h"
 #include "SpriteRenderer.h"
-
+#include "RectangleRenderer.h"
 
 Scene::Scene(GLFWwindow* window, float width, float height, glm::vec3 backgroundColor, std::shared_ptr<OrthoCamera> camera)
 {
@@ -119,6 +119,14 @@ void Scene::UpdateComponent(Entity::ComponentType type, std::shared_ptr<Componen
 		// draw the sprite
 		renderer->Draw(mainCamera);
 		break; 
+	}
+	case Entity::RectangleRenderer:
+	{
+		// cast component to renderer
+		std::shared_ptr<RectangleRenderer> renderer = std::static_pointer_cast<RectangleRenderer>(component);
+		// draw the sprite
+		renderer->Draw(mainCamera);
+		break;
 	}
 	default: // do nothing
 		break;
