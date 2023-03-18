@@ -1,0 +1,59 @@
+{
+  "version": "2.1.0",
+  "$schema": "https://schemastore.azurewebsites.net/schemas/json/sarif-2.1.0-rtm.5.json",
+  "runs": [
+    {
+      "results": [],
+      "tool": {
+        "driver": {
+          "name": "PREfast",
+          "fullName": "PREfast Code Analysis",
+          "version": "14.32.31328.0",
+          "informationUri": "https://aka.ms/cpp/ca"
+        }
+      },
+      "invocations": [
+        {
+          "executionSuccessful": true
+        }
+      ],
+      "artifacts": [
+        {
+          "location": {
+            "uri": "file:///x:/onedrive - de la salle college/subjects/coding projects/opengl projects/graphics renderer 1.0/solution/graphicsrenderer/texture2d.cpp"
+          },
+          "roles": [
+            "analysisTarget"
+          ],
+          "hashes": {
+            "sha-256": "7ba4f767554ea04846a9747be6aaae157bfe8199655cad3eba123bb6a8ee9081"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///x:/onedrive - de la salle college/subjects/coding projects/opengl projects/graphics renderer 1.0/solution/graphicsrenderer/texture2d.h"
+          },
+          "hashes": {
+            "sha-256": "4e95833a0b56ffc7f1d4315488149a520194a8d8b8184462632a79b9f42f46ba"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///x:/onedrive - de la salle college/subjects/coding projects/opengl projects/graphics renderer 1.0/libraries/include/glad/glad.h"
+          },
+          "hashes": {
+            "sha-256": "f633e291fd0cc3e6c93cd8e005762b8ee6be935d7a8e2c5c75b553fdbf2dc8af"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///x:/onedrive - de la salle college/subjects/coding projects/opengl projects/graphics renderer 1.0/libraries/include/khr/khrplatform.h"
+          },
+          "hashes": {
+            "sha-256": "7b1e01aaa7ad8f6fc34b5c7bdf79ebf5189bb09e2c4d2e79fc5d350623d11e83"
+          }
+        }
+      ]
+    }
+  ]
+}
