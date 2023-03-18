@@ -14,7 +14,8 @@ public:
 
 
 	enum ComponentType {
-		SpriteRenderer
+		SpriteRenderer,
+		RectangleRenderer
 	} ;
 	// whether or not the entity is active in scene. Dictates whether components are called each frame
 	bool isActive = true;

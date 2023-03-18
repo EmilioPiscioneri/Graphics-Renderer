@@ -51,12 +51,17 @@
     <ClCompile Include="glad.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="RectangleRenderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="FragmentShaders\Default.frag" />
     <None Include="VertexShaders\Default.vert" />
     <None Include="VertexShaders\SpriteDefault.vert" />
     <None Include="FragmentShaders\SpriteDefault.frag" />
+    <None Include="FragmentShaders\RectangleDefault.frag" />
+    <None Include="VertexShaders\RectangleDefault.vert" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ShaderProgram.h">
@@ -93,6 +98,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="EventListener.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RectangleRenderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

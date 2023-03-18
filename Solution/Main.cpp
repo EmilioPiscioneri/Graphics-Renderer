@@ -9,6 +9,7 @@
 
 // stuff i made
 #include "SpriteRenderer.h"
+#include "RectangleRenderer.h"
 #include "ResourceManager.h"
 #include "Scene.h"
 
@@ -126,23 +127,42 @@ int main() {
 	if(wireframeMode)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	
-	// create rect entity
-	std::shared_ptr<Entity> rect = std::make_shared<Entity>(); 
+	// create sprite entity
+	std::shared_ptr<Entity> sprite = std::make_shared<Entity>(); 
 
-	rect->transform.size = glm::vec3(400.0f, 400.f, 0.0f);
-	rect->transform.position.x = 200.0f;
-	rect->transform.position.y = 200.0f;
-	rect->transform.rotation.z = 45.0f;
+	sprite->transform.size = glm::vec3(400.0f, 400.f, 0.0f);
+	sprite->transform.position.x = 200.0f;
+	sprite->transform.position.y = 200.0f;
+	sprite->transform.rotation.z = 45.0f;
 	
 	// create a new sprite renderer
-	std::shared_ptr<SpriteRenderer> renderer = std::make_shared<SpriteRenderer>(zazaTexture);
-	renderer->color = glm::vec3(1.0f, 0.0f, 0.0f); // red
+	std::shared_ptr<SpriteRenderer> spriteRenderer = std::make_shared<SpriteRenderer>(zazaTexture);
+	spriteRenderer->color = glm::vec3(1.0f, 0.0f, 0.0f); // red
 	//renderer->color = glm::vec3(0.0f, 1.0f, 0.0f); // green
 	//renderer->color = glm::vec3(0.0f, 0.0f, 1.0f); // blue
 	
 	// add to entity
-	rect->AddComponent(Entity::ComponentType::SpriteRenderer, renderer); 
+	sprite->AddComponent(Entity::ComponentType::SpriteRenderer, spriteRenderer);
 	//rect.AddComponent(Entity::ComponentType::SpriteRenderer, std::make_shared<SpriteRenderer>());
+
+	scene->AddEntity("rect", sprite);
+
+	// create rect entity
+	std::shared_ptr<Entity> rect = std::make_shared<Entity>();
+
+	rect->transform.size = glm::vec3(100.0f, 100.f, 0.0f);
+	rect->transform.position.x = 50.0f;
+	rect->transform.position.y = 50.0f;
+	rect->transform.rotation.z = -22.5f;
+
+	// create a new sprite renderer
+	std::shared_ptr<RectangleRenderer> rectRenderer = std::make_shared<RectangleRenderer>();
+	//rectRenderer->color = glm::vec3(1.0f, 0.0f, 0.0f); // red
+	//rectRenderer->color = glm::vec3(0.0f, 1.0f, 0.0f); // green
+	//rectRenderer->color = glm::vec3(0.0f, 0.0f, 1.0f); // blue
+
+	// add to entity
+	rect->AddComponent(Entity::ComponentType::RectangleRenderer, rectRenderer);
 
 	scene->AddEntity("rect", rect);
 
