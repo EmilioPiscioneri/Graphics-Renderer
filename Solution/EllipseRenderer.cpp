@@ -55,8 +55,11 @@ void EllipseRenderer::Draw(std::shared_ptr<OrthoCamera> camera)
 	// set color of sprite
 	shaderProgram->SetVector3f("spriteColor", color);
 	// set position and size of ellipse which is used in fragment shader for calculations
-	shaderProgram->SetVector2f("modelSize", glm::vec2(parentEntity->transform.size));
-	shaderProgram->SetVector2f("modelPosition", glm::vec2(parentEntity->transform.position));
+	shaderProgram->SetVector2f("modelSize", glm::vec2(ellipseTransform.size));
+	shaderProgram->SetVector2f("modelPosition", glm::vec2(ellipseTransform.position));
+
+	// pass the z axis rotation
+	shaderProgram->SetFloat("modelZRotation", glm::radians(ellipseTransform.rotation.z));
 
 
 	//shaderProgram->SetVector2f("objectCentre", glm::vec2(ellipseTransform.position.x + ellipseTransform.size.x/2.0f, ellipseTransform.position.y + ellipseTransform.size.y/2.0f ));

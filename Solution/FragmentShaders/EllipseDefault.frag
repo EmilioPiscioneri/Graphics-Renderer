@@ -1,10 +1,11 @@
-#version 330 core
+﻿#version 330 core
 out vec4 FragColor;
 
 uniform vec3 spriteColor;
 uniform vec2 screenSize;
 uniform vec2 modelSize; // size of ellipse (in global coordinates)
 uniform vec2 modelPosition; // position of ellipse (in global coordinates) 
+uniform float modelZRotation; // rotation that is applied to the ellipse on the z axis (theta) in radians
 
 
 //bool PositionIsInCircle(vec2 position, vec2 centre, float radiusX, float radiusY); // non smoothed ellipse code
@@ -27,14 +28,50 @@ void main()
 
 	// same logic then applies to y axis
 	float radiusY = ellipseCentre.y - modelPosition.y;
-
-
-	// Ok so now we have a pixel position (x,y) and a centre position (h,k) and radius for x-axis (a) and y-axis (b)
 	
-	// The general equation of ellipse is ((x-h)^2)/a^2 + ((y-k)^2)/b^2 = 1
-	// If you look at the equation you can see we have all those values to substitute.
-	// If you make the equation an inequality ((x-h)^2)/a^2 + ((y-k)^2)/b^2 <= 1
-	//	Then whenever the equation is true you have a pixel (x,y) that is in the bounds of an ellipse
+	
+	// Ok so now we have a pixel position (x,y) and a centre position (h,k) and radius for x-axis (a) and y-axis (b)
+
+	//The only issue is we haven't taken into account rotations.
+
+	// Rotations of a vec2 can be calculated by doing.
+	/* [	x * cosθ - y * sinθ, 
+			x * sinθ + y * cosθ		]  
+
+		The we need to account for the (h,k) a.k.a centre coordinate of the ellipse. You end up getting.
+
+		[	(x-h)* cosθ - (y-h) * sinθ, 
+			(x-h)* sinθ + (y-h) * cosθ		]  
+
+		The normal form of an ellipse is ((x-h)^2)/a^2 + ((y-k)^2)/b^2 = 1
+
+		When we account for rotations we get: (A big ass equation, thank god for desmos)
+			Form =	(((x-h) * cos(θ) - (y - k) * sin(θ))^2) / a^2 + (((y-k) * cos(θ) + (x - h) * sin(θ))^2) / b^2 = 1
+
+		 view https://www.desmos.com/calculator/wphy49dcmq and play animation of t value. It's a visualisation I made to figure it out.
+		 i don't understand the rotation math that much but see https://www.youtube.com/watch?v=7j5yW5QDC2U&ab_channel=FreyaHolm%C3%A9r
+		 and https://learnopengl.com/Getting-started/Transformations for more info. To be fair I'm doing this on a sunday at 10 pm my mind isn't really looking for a big math
+		 lesson.
+
+		if you look at that mess and understand it you can actually see we have all of these values
+
+		The x and y value is the pixelPos
+		The centre (h,k) is ellipseCentre
+		The a is radiusX
+		The b is radiusY
+		θ is modelZRotation. This is because rotations relative to z axis move everything along the x and y. Anyway basically just accept this is theta ok.
+
+		So the above equation mess I showed you
+			Form = 1
+		This can become an inequality
+			Form <= 1
+
+		When this inequality is true you have a pixel that is in the bounds of the ellipse.
+
+		I then do my fancy smoothstep to make it not jagged and actually bleed on the outside to give the illusion of a perfect circle. This is because a square grid 
+		don't perfectly fit a mathematically perfect circle yknow. Your screen is a grid of squares (pixels) so yeah.
+	*/
+	
 	// -- smoothing explanation --
 	// However, if i were to set the equation to be general equation <= 0.95 I would lose 5% (0.05) of the ellipse's size.
 	//	Using this logic I can use glsls smoothstep function where I set an inner ellipse and the outer ellipse is just the original one.
@@ -71,7 +108,20 @@ void main()
 // returns a value from 0 to 1 which can be set to the alpha value of fragment shader output. This function smooths the circle to get a nicer output
 float GetAlphaOfEllipse(vec2 position, vec2 centre, float radiusX, float radiusY)	{
 	// just substitute all the values and solve
-	float result = pow(position.x - centre.x,2.0) / pow(radiusX,2.0) + pow(position.y - centre.y,2.0) / pow(radiusY,2.0);
+	// old equation
+	//	float result = pow(position.x - centre.x,2.0) / pow(radiusX,2.0) + pow(position.y - centre.y,2.0) / pow(radiusY,2.0);
+	// new equation
+	// (((x-h) * cos(θ) - (y - k) * sin(θ))^2) / a^2 + (((y-k) * cos(θ) + (x - h) * sin(θ))^2) / b^2 = 1
+	float result = 
+	// ((x-h) * cos(θ) - (y - k) * sin(θ)) ^ 2
+	pow((position.x - centre.x) * cos(modelZRotation) - (position.y - centre.y) * sin(modelZRotation),2.0) 
+	/ 
+	pow(radiusX,2.0) // a^2
+	+ 
+	// ((y-k) * cos(θ) + (x - h) * sin(θ)) ^ 2
+	pow((position.y - centre.y) * cos(modelZRotation) + (position.x - centre.x) * sin(modelZRotation),2.0)
+	/ 
+	pow(radiusY,2.0); // b^2
 
 	// apply smoothing to the result
 	float smoothedResult = 1-smoothstep(1.0 - smoothAmount ,1, result);

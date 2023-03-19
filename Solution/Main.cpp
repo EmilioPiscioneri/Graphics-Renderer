@@ -60,6 +60,10 @@
 * Only 2D
 *
 * I don't include support for geometry shaders. Maybe later
+* 
+* The ellipse renderer doesn't support rotations on the x and y axis because it requires me to learn quarternions. I'm still in pre-calculus (1&2 methods) so maybe when 
+	I get to calculus I'll be willing to tackle that problem. For now I'm sticking to 2D rotations (rotation along the z axis). It also involves me dealing with the
+	complex plane like fuck that. I'm making a 2D renderer anyway not 3D. It's an orthographic view as well smh my head.
 */
 
 // defualt fragment shader
@@ -123,6 +127,8 @@ int main() {
 	// --- config ---
 	// enable depth testing to ensure opengl takes into account depth when rendering
 	glEnable(GL_DEPTH_TEST);
+
+
 	// ensures openGL doesn't fuck with images that don't have dimensions divisible by 4 
 	// Explanation: https://stackoverflow.com/questions/11042027/glpixelstoreigl-unpack-alignment-1-disadvantages
 	// Issues when this function isn't called: https://stackoverflow.com/questions/11042027/glpixelstoreigl-unpack-alignment-1-disadvantages
@@ -193,12 +199,12 @@ int main() {
 	ellipse->transform.size = glm::vec3(400.0f, 200.f, 0.0f);
 	ellipse->transform.position.x = 200.0f;
 	ellipse->transform.position.y = 300.0f;
-	//ellipse->transform.rotation.z = -22.5f;
+	ellipse->transform.rotation.z = 22.5f;
 
 	// create a new sprite renderer
 	std::shared_ptr<EllipseRenderer> ellipseRenderer = std::make_shared<EllipseRenderer>();
 	//ellipseRenderer->color = glm::vec3(1.0f, 0.0f, 0.0f); // red
-	//ellipseRenderer->color = glm::vec3(0.0f, 1.0f, 0.0f); // green
+	ellipseRenderer->color = glm::vec3(0.0f, 1.0f, 0.0f); // green
 	//ellipseRenderer->color = glm::vec3(0.0f, 0.0f, 1.0f); // blue
 	//ellipseRenderer->color = glm::vec3(1.0f, 1.0f, 0.0f); // yellow
 
@@ -221,6 +227,7 @@ int main() {
 	{
 		// --- Update current scene ---
 
+		ellipse->transform.rotation.z = glm::degrees((float)glfwGetTime());
 		scene->Update();
 
 		//float timeSinceStart = (float)glfwGetTime(); // time since start of window
