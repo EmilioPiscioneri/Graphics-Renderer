@@ -1,6 +1,8 @@
 #include "Scene.h"
 #include "SpriteRenderer.h"
 #include "RectangleRenderer.h"
+#include "EllipseRenderer.h"
+
 
 Scene::Scene(GLFWwindow* window, float width, float height, glm::vec3 backgroundColor, std::shared_ptr<OrthoCamera> camera)
 {
@@ -116,7 +118,7 @@ void Scene::UpdateComponent(Entity::ComponentType type, std::shared_ptr<Componen
 
 		// cast component to renderer
 		std::shared_ptr<SpriteRenderer> renderer = std::static_pointer_cast<SpriteRenderer>(component);
-		// draw the sprite
+		// render to screen
 		renderer->Draw(mainCamera);
 		break; 
 	}
@@ -124,7 +126,15 @@ void Scene::UpdateComponent(Entity::ComponentType type, std::shared_ptr<Componen
 	{
 		// cast component to renderer
 		std::shared_ptr<RectangleRenderer> renderer = std::static_pointer_cast<RectangleRenderer>(component);
-		// draw the sprite
+		// render to screen
+		renderer->Draw(mainCamera);
+		break;
+	}
+	case Entity::EllipseRenderer:
+	{
+		// cast component to renderer
+		std::shared_ptr<EllipseRenderer> renderer = std::static_pointer_cast<EllipseRenderer>(component);
+		// render to screen
 		renderer->Draw(mainCamera);
 		break;
 	}

@@ -32,6 +32,8 @@ public:
 	void SetMatrix4(const char* uniformName, glm::mat4 matrix);
 	// set a float vector 3 uniform
 	void SetVector3f(const char* uniformName, glm::vec3 vector);
+	// set a float vector 2 uniform
+	void SetVector2f(const char* uniformName, glm::vec2 vector);
 private:
 	// used to check for compile errors
 	enum ShaderType {

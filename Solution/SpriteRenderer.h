@@ -2,7 +2,7 @@
 #include "Component.h"
 #include "ShaderProgram.h"
 #include "Texture2D.h"
-#include "Camera.h"
+#include "OrthoCamera.h"
 
 class SpriteRenderer :
     public Component
@@ -17,7 +17,7 @@ public:
     glm::vec3 color;
 
     // draw a sprite using reference to scene camera and parent entity's transform
-    void Draw(std::shared_ptr<Camera> camera);
+    void Draw(std::shared_ptr<OrthoCamera> camera);
 
 private:
     // shader program that the sprite renderer uses

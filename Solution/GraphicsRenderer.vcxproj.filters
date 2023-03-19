@@ -54,6 +54,9 @@
     <ClCompile Include="RectangleRenderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="EllipseRenderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="FragmentShaders\Default.frag" />
@@ -62,6 +65,8 @@
     <None Include="FragmentShaders\SpriteDefault.frag" />
     <None Include="FragmentShaders\RectangleDefault.frag" />
     <None Include="VertexShaders\RectangleDefault.vert" />
+    <None Include="FragmentShaders\EllipseDefault.frag" />
+    <None Include="VertexShaders\EllipseDefault.vert" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ShaderProgram.h">
@@ -101,6 +106,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="RectangleRenderer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EllipseRenderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -34,7 +34,7 @@ SpriteRenderer::~SpriteRenderer()
 	glDeleteBuffers(1, &rectEBO);
 }
 
-void SpriteRenderer::Draw(std::shared_ptr<Camera> camera)
+void SpriteRenderer::Draw(std::shared_ptr<OrthoCamera> camera)
 {
 	if (parentEntity == nullptr)
 		throw std::exception("Tried to draw a sprite which doesn't have a parent entity");

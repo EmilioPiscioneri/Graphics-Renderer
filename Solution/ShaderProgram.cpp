@@ -62,6 +62,9 @@ void ShaderProgram::Use()
 	glUseProgram(ID);
 }
 
+// --- Uniform utility functions to easily assign uniforms in a shader ---
+// NOTE that you must first do ShaderProgram->Use() and then assign uniforms
+
 void ShaderProgram::SetBool(const char* uniformName, bool value)
 {
 	// get location of uniform
@@ -122,6 +125,18 @@ void ShaderProgram::SetVector3f(const char* uniformName, glm::vec3 vector)
 		return;
 	}
 	glUniform3f(uniformLocation, vector.x, vector.y, vector.z);
+}
+
+void ShaderProgram::SetVector2f(const char* uniformName, glm::vec2 vector)
+{
+	// get location of uniform
+	int uniformLocation = glGetUniformLocation(ID, uniformName);
+	if (uniformLocation == -1)
+	{
+		std::cout << "ERROR: Tried to assign float vec2 to uniform " << uniformName << " which doesn't exist" << std::endl;
+		return;
+	}
+	glUniform2f(uniformLocation, vector.x, vector.y);
 }
 
 void ShaderProgram::CheckCompileErrors(unsigned int objectID, ShaderType type)

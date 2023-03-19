@@ -32,7 +32,7 @@ RectangleRenderer::~RectangleRenderer()
 	glDeleteBuffers(1, &rectEBO);
 }
 
-void RectangleRenderer::Draw(std::shared_ptr<Camera> camera)
+void RectangleRenderer::Draw(std::shared_ptr<OrthoCamera> camera)
 {
 	if (parentEntity == nullptr)
 		throw std::exception("Tried to draw a sprite which doesn't have a parent entity");
