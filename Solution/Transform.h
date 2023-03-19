@@ -17,5 +17,6 @@ public:
 	
 	// Converts the current transform into a 4x4 local transformation matrix
 	glm::mat4 ToMatrix();
+
 };
 
