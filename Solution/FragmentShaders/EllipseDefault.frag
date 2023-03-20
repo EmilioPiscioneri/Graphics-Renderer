@@ -2,11 +2,11 @@
 out vec4 FragColor;
 
 uniform vec3 spriteColor;
-uniform vec2 screenSize;
-uniform vec2 modelSize; // size of ellipse (in global coordinates)
-uniform vec2 modelPosition; // position of ellipse (in global coordinates) 
-uniform float modelZRotation; // rotation that is applied to the ellipse on the z axis (theta) in radians
-
+uniform vec2 ellipseCentre; // centre of ellipse (in global coords)
+uniform float radiusX; // size of x radius of ellipse (in global coords)
+uniform float radiusY; // size of y radius of ellipse (in global coords)
+uniform float sinModelZRotation; // result of sin (model z rotation). This is used to calculate the rotation of each pixel
+uniform float cosModelZRotation; // result of cos (model z rotation). This is used to calculate the rotation of each pixel
 
 //bool PositionIsInCircle(vec2 position, vec2 centre, float radiusX, float radiusY); // non smoothed ellipse code
 float GetAlphaOfEllipse(vec2 position, vec2 centre, float radiusX, float radiusY);
@@ -17,20 +17,9 @@ void main()
 {
 	// get the coordinate of the current pixel. gl_FragCoord.xy are screen space (aka global) coordinates but that's ok cos the modelSize and position is too.
 	// Note that each coord is offset by 0.5 pixels in x and y
-	vec2 pixelPos = gl_FragCoord.xy;
-
-	// get the centre (h,k) of the current ellipse in pixel/global coords. The position of an ellipse is at the bottom-left so add half width and height to get actual centre
-	vec2 ellipseCentre = modelPosition + modelSize/2;
-
-	// get the x radius by doing the centreX - bottomLeftPositionX
-	// E.g.  if centreX is 5 and position is 2 then the difference between 2 and 5 is 3 or 5 - 3 or centreX - positionX
-	float radiusX = ellipseCentre.x - modelPosition.x;
-
-	// same logic then applies to y axis
-	float radiusY = ellipseCentre.y - modelPosition.y;
+	vec2 pixelPos = gl_FragCoord.xy;	
 	
-	
-	// Ok so now we have a pixel position (x,y) and a centre position (h,k) and radius for x-axis (a) and y-axis (b)
+	// If you look at the uniforms and above variable we have a pixel position (x,y) and a centre position (h,k) and radius for x-axis (a) and y-axis (b)
 
 	//The only issue is we haven't taken into account rotations.
 
@@ -45,6 +34,8 @@ void main()
 
 		[	(x-h)* cos(theta) - (y-h) * sin(theta), 
 			(x-h)* sin(theta) + (y-h) * cos(theta)		]  
+
+		Note that I pre-compute these sin and cos values on the cpu once and then send it as a uniform to improve performance.
 
 		The normal form of an ellipse is ((x-h)^2)/a^2 + ((y-k)^2)/b^2 = 1
 
@@ -117,12 +108,12 @@ float GetAlphaOfEllipse(vec2 position, vec2 centre, float radiusX, float radiusY
 	// (((x-h) * cos(theta) - (y - k) * sin(theta))^2) / a^2 + (((y-k) * cos(theta) + (x - h) * sin(theta))^2) / b^2 = 1
 	float result = 
 	// ((x-h) * cos(theta) - (y - k) * sin(theta)) ^ 2
-	pow((position.x - centre.x) * cos(modelZRotation) - (position.y - centre.y) * sin(modelZRotation),2.0) 
+	pow((position.x - centre.x) * cosModelZRotation - (position.y - centre.y) * sinModelZRotation,2.0) 
 	/ 
 	pow(radiusX,2.0) // a^2
 	+ 
 	// ((y-k) * cos(theta) + (x - h) * sin(theta)) ^ 2
-	pow((position.y - centre.y) * cos(modelZRotation) + (position.x - centre.x) * sin(modelZRotation),2.0)
+	pow((position.y - centre.y) * cosModelZRotation + (position.x - centre.x) * sinModelZRotation,2.0)
 	/ 
 	pow(radiusY,2.0); // b^2
 
