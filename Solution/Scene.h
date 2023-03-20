@@ -77,7 +77,7 @@ private:
 	std::map < EventType, std::vector<EventListener>> _eventListeners;
 
 	// this is incremented each time an event listener is added. It is used to set the id of each added event listener
-	// No one is using more than 2^32 - 1 (4,294,967,295) fuckin event listeners
+	// No one is using more than 2^32 - 1 (4,294,967,295) event listeners
 	unsigned int amntOfEventListenersCreated = 0;
 
 
