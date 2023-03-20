@@ -1,4 +1,4 @@
-﻿#version 330 core
+#version 330 core
 out vec4 FragColor;
 
 uniform vec3 spriteColor;
@@ -35,18 +35,21 @@ void main()
 	//The only issue is we haven't taken into account rotations.
 
 	// Rotations of a vec2 can be calculated by doing.
-	/* [	x * cosθ - y * sinθ, 
-			x * sinθ + y * cosθ		]  
+	/* 
+		I can't use theta sign so ur gonna have to deal with it because encoding isn't supported
+
+		[	x * cos(theta) - y * sin(theta), 
+			x * sin(theta) + y * cos(theta)	]  
 
 		The we need to account for the (h,k) a.k.a centre coordinate of the ellipse. You end up getting.
 
-		[	(x-h)* cosθ - (y-h) * sinθ, 
-			(x-h)* sinθ + (y-h) * cosθ		]  
+		[	(x-h)* cos(theta) - (y-h) * sin(theta), 
+			(x-h)* sin(theta) + (y-h) * cos(theta)		]  
 
 		The normal form of an ellipse is ((x-h)^2)/a^2 + ((y-k)^2)/b^2 = 1
 
 		When we account for rotations we get: (A big ass equation, thank god for desmos)
-			Form =	(((x-h) * cos(θ) - (y - k) * sin(θ))^2) / a^2 + (((y-k) * cos(θ) + (x - h) * sin(θ))^2) / b^2 = 1
+			Form =	(((x-h) * cos(theta) - (y - k) * sin(theta))^2) / a^2 + (((y-k) * cos(theta) + (x - h) * sin(theta))^2) / b^2 = 1
 
 		 view https://www.desmos.com/calculator/wphy49dcmq and play animation of t value. It's a visualisation I made to figure it out.
 		 i don't understand the rotation math that much but see https://www.youtube.com/watch?v=7j5yW5QDC2U&ab_channel=FreyaHolm%C3%A9r
@@ -59,9 +62,9 @@ void main()
 		The centre (h,k) is ellipseCentre
 		The a is radiusX
 		The b is radiusY
-		θ is modelZRotation. This is because rotations relative to z axis move everything along the x and y. Anyway basically just accept this is theta ok.
+		theta is modelZRotation. This is because rotations relative to z axis move everything along the x and y. Anyway basically just accept this is theta ok.
 
-		So the above equation mess I showed you
+		So the above equation mess I showed youm 
 			Form = 1
 		This can become an inequality
 			Form <= 1
@@ -111,14 +114,14 @@ float GetAlphaOfEllipse(vec2 position, vec2 centre, float radiusX, float radiusY
 	// old equation
 	//	float result = pow(position.x - centre.x,2.0) / pow(radiusX,2.0) + pow(position.y - centre.y,2.0) / pow(radiusY,2.0);
 	// new equation
-	// (((x-h) * cos(θ) - (y - k) * sin(θ))^2) / a^2 + (((y-k) * cos(θ) + (x - h) * sin(θ))^2) / b^2 = 1
+	// (((x-h) * cos(theta) - (y - k) * sin(theta))^2) / a^2 + (((y-k) * cos(theta) + (x - h) * sin(theta))^2) / b^2 = 1
 	float result = 
-	// ((x-h) * cos(θ) - (y - k) * sin(θ)) ^ 2
+	// ((x-h) * cos(theta) - (y - k) * sin(theta)) ^ 2
 	pow((position.x - centre.x) * cos(modelZRotation) - (position.y - centre.y) * sin(modelZRotation),2.0) 
 	/ 
 	pow(radiusX,2.0) // a^2
 	+ 
-	// ((y-k) * cos(θ) + (x - h) * sin(θ)) ^ 2
+	// ((y-k) * cos(theta) + (x - h) * sin(theta)) ^ 2
 	pow((position.y - centre.y) * cos(modelZRotation) + (position.x - centre.x) * sin(modelZRotation),2.0)
 	/ 
 	pow(radiusY,2.0); // b^2
