@@ -1,7 +1,7 @@
 #include "Transform.h"
 #include <glm/gtc/matrix_transform.hpp> // matrix math
 
-Transform::Transform(glm::vec3 position, glm::vec3 size, glm::vec3 rotation)
+Transform::Transform(glm::vec2 position, glm::vec3 size, glm::vec3 rotation)
 {
     // set to corresponding parameter
     this->position = position;
@@ -20,7 +20,11 @@ glm::mat4 Transform::ToMatrix()
     // Then you add size.x and y to the position to make the origin of position be bottom-left corner
     // Normally you would add size.x/2 and size.y/2 but because the size is in global units you times that value by 2
     // so you end up getting size.x/2 * 2 and size.y/2 * 2 where the twos just cancel each other out 
-    transMatrix = glm::translate(transMatrix, glm::vec3((position.x*2.0f) + size.x, (position.y*2.0f) + size.y, position.z)); 
+
+    // Do -zIndex because the camera faces the negative z axis
+   
+
+    transMatrix = glm::translate(transMatrix, glm::vec3((position.x*2.0f) + size.x, (position.y*2.0f) + size.y, -((float) zIndex))); 
     transMatrix = glm::rotate(transMatrix,glm:: radians(-(rotation.x)), glm::vec3(1.0f, 0.0f, 0.0f)); // rotate about x axis
     transMatrix = glm::rotate(transMatrix, glm::radians(-(rotation.y)), glm::vec3(0.0f, 1.0f, 0.0f)); // rotate about y axis
     transMatrix = glm::rotate(transMatrix, glm::radians(-(rotation.z)), glm::vec3(0.0f, 0.0f, 1.0f)); // rotate about z axis

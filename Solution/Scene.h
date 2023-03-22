@@ -35,6 +35,9 @@ public:
 	// Retrieve an entity frome scene based on name. Returns nullptr if not found
 	std::shared_ptr<Entity> GetEntity(std::string name);
 
+	// If an entity's HasTransparency boolean changes after it has been added to scene this function MUST be called. Pass in the new transparency in the last newTransparency parameter
+	void UpdateEntityTransparency(std::shared_ptr<Entity> entity);
+
 	// main camera in scene
 	std::shared_ptr<OrthoCamera> mainCamera;
 
@@ -69,8 +72,11 @@ public:
 private:
 	// private variables come after public because they need to access some public values
 	
-	// dictionary(map) of all entitie in a scene, indexed by name
-	std::map<std::string, std::shared_ptr<Entity>> _entities;
+	// dictionary(map) of all opaque entities in a scene, indexed by name
+	std::map<std::string, std::shared_ptr<Entity>> _opaqueEntities;
+
+	// dictionary(map) of all entities (with any kind of transparency) in a scene, indexed by name
+	std::map<std::string, std::shared_ptr<Entity>> _transparentEntities;
 
 	// dictionary (map) of dynamic array (vectors) of event listeners (objects with function callbacks) which are indexed by event type.
 	// There shouldn't be too much overhead with the vectors for each event type but like what do I know I'm 16 yknow
@@ -99,9 +105,11 @@ private:
 	// whether an item of specific name exists in a map (passed as pointer)
 	template <typename T>
 	static bool ItemExistsInMap(std::string name, std::map<std::string, T>& inputMap);
-	// Checks if desired name doesn't exist in map (passed as pointer) and keeps adding " 1" to name until there is an available unused name 
-	template <typename T>
-	static std::string GetValidNameForMap(std::string inputName, std::map<std::string, T>& inputMap);
+
+
+
+	// Checks if desired name doesn't exist and if not, keeps adding "1" to name until there is an available unused name. 
+	std::string GetValidName(std::string inputName);
 	// Run update function on a component based on type
 	void UpdateComponent(Entity::ComponentType type, std::shared_ptr<Component> component);
 	//when the last frame occurred in seconds (relative to how long program has been running for)

@@ -50,6 +50,15 @@
 	the derived component's class name as an enum. You then pass in the actual Class in the generic type parameter which casts the base component to pointer 
 	of the derived componet. Hope that makes sense. Anyway point is I was stuck on how to actually implement this feature and this was the solution I came up with.
 	May not be pretty but it is fairly simple and works
+
+* The camera faces towards the negative z-axis. Keep this in mind if you ever want to specifically set something in front of another. If you have objects a and b and you want
+	a to be in front of be you would set a to -1 (smaller number is closer to screen) and b to -2 on the z axis of the scene.
+	HOWEVER, in order to avoid this I implemented a zIndex which is like a layering system where greater numbers appear on top and smaller numbers appear behind in the scene.
+	It really just puts different values on the negative z axis in the scene. If you're familiar with CSS this won't be a foreign concept.
+* 
+* If an entity has any kinda transparency you MUST do entity.SetHasTransparency(true) so that the scene is rendered correctly
+* 
+* No two entities can share the same name under a scene
 * 
 * --- Known bugs/issues ---
 * I believe that camera rotation doesn't rotate that nicely. I think it rotates the entire scene around (0,0) which produces a weird effect.
@@ -146,13 +155,32 @@ int main() {
 	// wireframe mode
 	if(wireframeMode)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+
+	// create rect entity
+	std::shared_ptr<Entity> rect = std::make_shared<Entity>();
+
+	rect->transform.size = glm::vec3(100.0f, 100.f, 0.0f);
+	rect->transform.position.x = 50.0f;
+	rect->transform.position.y = 50.0f;
+	rect->transform.zIndex = 1;
+
+	rect->transform.rotation.z = -22.5f;
+
+	// create a new rect renderer
+	std::shared_ptr<RectangleRenderer> rectRenderer = std::make_shared<RectangleRenderer>();
+	//rectRenderer->color = glm::vec3(1.0f, 0.0f, 0.0f); // red
+	//rectRenderer->color = glm::vec3(0.0f, 1.0f, 0.0f); // green
+	//rectRenderer->color = glm::vec3(0.0f, 0.0f, 1.0f); // blue
 	
+
 	// create sprite entity
 	std::shared_ptr<Entity> sprite = std::make_shared<Entity>(); 
 
 	sprite->transform.size = glm::vec3(400.0f, 400.f, 0.0f);
 	sprite->transform.position.x = 200.0f;
 	sprite->transform.position.y = 200.0f;
+	sprite->transform.zIndex = 3;
 	sprite->transform.rotation.z = 45.0f;
 	
 	// create a new sprite renderer
@@ -165,27 +193,14 @@ int main() {
 	sprite->AddComponent(Entity::ComponentType::SpriteRenderer, spriteRenderer);
 	//rect.AddComponent(Entity::ComponentType::SpriteRenderer, std::make_shared<SpriteRenderer>());
 
-	scene->AddEntity("sprite", sprite);
+	scene->AddEntity("asprite", sprite);
 
-	// create rect entity
-	std::shared_ptr<Entity> rect = std::make_shared<Entity>();
-
-	rect->transform.size = glm::vec3(100.0f, 100.f, 0.0f);
-	rect->transform.position.x = 50.0f;
-	rect->transform.position.y = 50.0f;
-	//rect->transform.position.z = 1.0f;
-	rect->transform.rotation.z = -22.5f;
-
-	// create a new sprite renderer
-	std::shared_ptr<RectangleRenderer> rectRenderer = std::make_shared<RectangleRenderer>();
-	//rectRenderer->color = glm::vec3(1.0f, 0.0f, 0.0f); // red
-	//rectRenderer->color = glm::vec3(0.0f, 1.0f, 0.0f); // green
-	//rectRenderer->color = glm::vec3(0.0f, 0.0f, 1.0f); // blue
+	
 
 	// add to entity
 	rect->AddComponent(Entity::ComponentType::RectangleRenderer, rectRenderer);
 
-	scene->AddEntity("rect", rect);
+	scene->AddEntity("brect", rect);
 
 	// create ellipse entity
 	std::shared_ptr<Entity> ellipse = std::make_shared<Entity>();
@@ -193,6 +208,8 @@ int main() {
 	ellipse->transform.size = glm::vec3(400.0f, 200.f, 0.0f);
 	ellipse->transform.position.x = 200.0f;
 	ellipse->transform.position.y = 300.0f;
+	ellipse->transform.zIndex = 2;
+
 	//ellipse->transform.rotation.z = -22.5f;
 
 	// create a new sprite renderer
@@ -205,7 +222,7 @@ int main() {
 	// add to entity
 	ellipse->AddComponent(Entity::ComponentType::EllipseRenderer, ellipseRenderer);
 
-	scene->AddEntity("zellipse", ellipse);
+	scene->AddEntity("cellipse", ellipse);
 
 
 

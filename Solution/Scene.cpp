@@ -30,31 +30,60 @@ void Scene::AddEntity(std::string name, std::shared_ptr<Entity> entity)
 {
 	if (entity == nullptr)
 		throw std::exception("ERROR: Tried to add a nullptr to scene");
+	
+	// set its attached scene to this cene
+	entity->attachedScene = this;
 
 	// Make sure the desired name hasn't been taken, if so keep adding "1" until a valid name is found
-	name = GetValidNameForMap<std::shared_ptr<Entity>>(name, _entities);
+	name = GetValidName(name);
 	// set the entity's name to the valid name
 	entity->name = name;
-	// add to map of entities
-	_entities.insert(std::pair<std::string, std::shared_ptr<Entity>>(name, entity));
+
+	// if it has transparecny and add to appropriate entities map
+	if(entity->GetHasTransparency())
+		_transparentEntities.insert(std::pair<std::string, std::shared_ptr<Entity>>(name, entity));
+	else // else is opaque
+		_opaqueEntities.insert(std::pair<std::string, std::shared_ptr<Entity>>(name, entity));
 }
 
 void Scene::RemoveEntity(std::string name)
 {
-	// if the entity exists the remove it
-	if (ItemExistsInMap<std::shared_ptr<Entity>>(name, _entities))
-		_entities.erase(name);
+	// if the entity exists in opaue entites then remove it
+	if (ItemExistsInMap<std::shared_ptr<Entity>>(name, _opaqueEntities))
+		_opaqueEntities.erase(name);
+	// else if it is in transparent entites remove it
+	else if (ItemExistsInMap<std::shared_ptr<Entity>>(name, _transparentEntities))
+		_transparentEntities.erase(name);
 }
 
 std::shared_ptr<Entity> Scene::GetEntity(std::string name)
 {
-	// if entity exists
-	if (ItemExistsInMap<std::shared_ptr<Entity>>(name, _entities))
+	// if entity exists in opaque map
+	if (ItemExistsInMap<std::shared_ptr<Entity>>(name, _opaqueEntities))
 		// return it
-		return _entities.at(name);
+		return _opaqueEntities.at(name);
+	// or it is in transparent map
+	else if(ItemExistsInMap<std::shared_ptr<Entity>>(name, _transparentEntities))
+		return _transparentEntities.at(name);
 	else
 		// else return null
 		return nullptr;
+}
+
+void Scene::UpdateEntityTransparency(std::shared_ptr<Entity> entity)
+{
+	// error checks
+	if (entity == nullptr)
+		throw std::exception("Why did you just try to update the transparency of nullptr");
+
+	if(entity->attachedScene != this)
+		throw std::exception("Why did you just try to update the transparency of an entity that doesn't belong to this scene?");
+
+	// remove the entity from wherever it is
+	RemoveEntity(entity->name);
+	// add it back, the add function handles transparency stuff for you/me/us/idk what perspective I'm supposed to write from 
+	AddEntity(entity->name, entity);
+	
 }
 
 
@@ -84,8 +113,8 @@ void Scene::Update()
 
 
 
-	// loop through each entity
-	for (std::pair<std::string, std::shared_ptr<Entity>> entityIterator : _entities)
+	// first loop through each opaque entity
+	for (std::pair<std::string, std::shared_ptr<Entity>> entityIterator : _opaqueEntities)
 	{
 		std::shared_ptr<Entity> iteratedEntity = entityIterator.second;
 
@@ -93,6 +122,21 @@ void Scene::Update()
 		if(iteratedEntity->isActive)
 			// loop through each component under entity
 			for (std::pair<Entity::ComponentType, std::shared_ptr<Component>> componentIterator : iteratedEntity->GetComponents()) 
+			{
+				// update the iterated component
+				UpdateComponent(componentIterator.first, componentIterator.second);
+			}
+	}
+	
+	// Now you loop through all entities with transparency 
+	for (std::pair<std::string, std::shared_ptr<Entity>> entityIterator : _transparentEntities)
+	{
+		std::shared_ptr<Entity> iteratedEntity = entityIterator.second;
+
+		// if the actual entity is enabled
+		if (iteratedEntity->isActive)
+			// loop through each component under entity
+			for (std::pair<Entity::ComponentType, std::shared_ptr<Component>> componentIterator : iteratedEntity->GetComponents())
 			{
 				// update the iterated component
 				UpdateComponent(componentIterator.first, componentIterator.second);
@@ -245,14 +289,13 @@ bool Scene::ItemExistsInMap(std::string name, std::map<std::string, T>& inputMap
 	return (inputMap.find(name) != inputMap.end());
 }
 
-template<typename T>
-std::string Scene::GetValidNameForMap(std::string inputName, std::map<std::string, T>& inputMap)
+std::string Scene::GetValidName(std::string inputName)
 {
 	// start with the input name and then keep adding "1" until you find a unique name
 	std::string outputName = inputName;
 
-	// while there is an element with the same name as desired one in map
-	while (ItemExistsInMap<T>(outputName, inputMap))
+	// While the name is in either opaque or transparent entity maps. I do this because I'm pretty sure maps are faster.
+	while (ItemExistsInMap <std::shared_ptr<Entity>> (outputName, _opaqueEntities) || ItemExistsInMap<std::shared_ptr<Entity>>(outputName,_transparentEntities))
 	{
 		outputName += "1"; // add 1 to the end of the name
 	}

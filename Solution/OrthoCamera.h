@@ -16,7 +16,7 @@ public:
     // height of viewport in pixels
     float height;
     // create a new orthographic camera using near/far plane and width and height of viewport
-    OrthoCamera(float width, float height, float nearPlane = -1.0f, float farPlane = 1.0f);
+    OrthoCamera(float width, float height, float nearPlane = -1.0f, float farPlane = 100.0f);
 
     // Get the view matrix of ortho camera with transformations applied
     glm::mat4 GetViewMatrix();

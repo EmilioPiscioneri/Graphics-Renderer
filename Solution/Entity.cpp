@@ -1,14 +1,43 @@
 #include "Entity.h"
+#include "Scene.h"
 
 Entity::Entity(Transform transform)
 {
     this->transform = transform;
+    attachedScene = nullptr; 
+}
+
+bool Entity::GetHasTransparency()
+{
+    // just return private var
+    return _hasTransparency;
+}
+
+void Entity::SetHasTransparency(bool newTransparency)
+{
+
+    // if entity is attached to a scene and there has been a change in the transparency of entity
+    if (attachedScene != nullptr && newTransparency != _hasTransparency)
+    {
+        // set it to new transparency
+        _hasTransparency = newTransparency;
+        // update the entity in the scene so it can be sorted properly
+        attachedScene->UpdateEntityTransparency(std::shared_ptr<Entity>(this));
+    }
+    else if (attachedScene == nullptr)
+        // doesn't matter if there has been a change just set it to new value. It gets handled whenever entity is added to a scene
+        _hasTransparency = newTransparency;
 }
 
 void Entity::AddComponent(ComponentType type, std::shared_ptr<Component> component)
 {
     // set the component's parent entity
     component->parentEntity = this;
+
+    // If the added component has transparency
+    if (component->hasTransprency)
+        // set the current entity's transparency
+        SetHasTransparency(true);
 
     // if component doesnt exist
     if (!ComponentExists(type))

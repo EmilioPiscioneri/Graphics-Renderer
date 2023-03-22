@@ -15,6 +15,8 @@ EllipseRenderer::EllipseRenderer(glm::vec3 color, ShaderProgram* program)
 	else // else use given one
 		this->shaderProgram = program;
 
+	// the smoothing shader makes use of transparency and blending to look nice
+	this->hasTransprency = true;
 	// set type of component
 	this->type = Entity::EllipseRenderer;
 	// set colour
@@ -62,7 +64,7 @@ void EllipseRenderer::Draw(std::shared_ptr<OrthoCamera> camera)
 	//shaderProgram->SetVector2f("objectCentre", glm::vec2(ellipseTransform.position.x + ellipseTransform.size.x/2.0f, ellipseTransform.position.y + ellipseTransform.size.y/2.0f ));
 
 	// hacky fix that I don't understand, makes sure blending works properly
-	glDisable(GL_DEPTH_TEST);
+	//glDisable(GL_DEPTH_TEST);
 
 	// draw the rect
 	glBindVertexArray(this->rectVAO);
@@ -71,7 +73,7 @@ void EllipseRenderer::Draw(std::shared_ptr<OrthoCamera> camera)
 
 	glBindVertexArray(0);
 	// re enable depth testing
-	glEnable(GL_DEPTH_TEST);
+	//glEnable(GL_DEPTH_TEST);
 }
 
 void EllipseRenderer::InitRenderData()
