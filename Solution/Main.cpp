@@ -161,9 +161,9 @@ int main() {
 	std::shared_ptr<Entity> rect = std::make_shared<Entity>();
 
 	rect->transform.size = glm::vec3(100.0f, 100.f, 0.0f);
-	rect->transform.position.x = 50.0f;
-	rect->transform.position.y = 50.0f;
-	rect->transform.zIndex = 1;
+	rect->transform.position.x = 250.0f;
+	rect->transform.position.y = 250.0f;
+	rect->transform.SetZIndex(2);
 
 	rect->transform.rotation.z = -22.5f;
 
@@ -171,8 +171,12 @@ int main() {
 	std::shared_ptr<RectangleRenderer> rectRenderer = std::make_shared<RectangleRenderer>();
 	//rectRenderer->color = glm::vec3(1.0f, 0.0f, 0.0f); // red
 	//rectRenderer->color = glm::vec3(0.0f, 1.0f, 0.0f); // green
-	//rectRenderer->color = glm::vec3(0.0f, 0.0f, 1.0f); // blue
+	rectRenderer->color = glm::vec3(0.0f, 0.0f, 1.0f); // blue
 	
+	// add to entity
+	rect->AddComponent(Entity::ComponentType::RectangleRenderer, rectRenderer);
+
+	scene->AddEntity("brect", rect);
 
 	// create sprite entity
 	std::shared_ptr<Entity> sprite = std::make_shared<Entity>(); 
@@ -180,7 +184,7 @@ int main() {
 	sprite->transform.size = glm::vec3(400.0f, 400.f, 0.0f);
 	sprite->transform.position.x = 200.0f;
 	sprite->transform.position.y = 200.0f;
-	sprite->transform.zIndex = 3;
+	sprite->transform.SetZIndex(1);
 	sprite->transform.rotation.z = 45.0f;
 	
 	// create a new sprite renderer
@@ -193,14 +197,11 @@ int main() {
 	sprite->AddComponent(Entity::ComponentType::SpriteRenderer, spriteRenderer);
 	//rect.AddComponent(Entity::ComponentType::SpriteRenderer, std::make_shared<SpriteRenderer>());
 
-	scene->AddEntity("asprite", sprite);
+	scene->AddEntity("csprite", sprite);
 
 	
 
-	// add to entity
-	rect->AddComponent(Entity::ComponentType::RectangleRenderer, rectRenderer);
-
-	scene->AddEntity("brect", rect);
+	
 
 	// create ellipse entity
 	std::shared_ptr<Entity> ellipse = std::make_shared<Entity>();
@@ -208,7 +209,7 @@ int main() {
 	ellipse->transform.size = glm::vec3(400.0f, 200.f, 0.0f);
 	ellipse->transform.position.x = 200.0f;
 	ellipse->transform.position.y = 300.0f;
-	ellipse->transform.zIndex = 2;
+	ellipse->transform.SetZIndex(3);
 
 	//ellipse->transform.rotation.z = -22.5f;
 
@@ -222,7 +223,7 @@ int main() {
 	// add to entity
 	ellipse->AddComponent(Entity::ComponentType::EllipseRenderer, ellipseRenderer);
 
-	scene->AddEntity("cellipse", ellipse);
+	scene->AddEntity("aellipse", ellipse);
 
 
 

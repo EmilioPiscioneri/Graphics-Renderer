@@ -32,12 +32,17 @@ void Scene::AddEntity(std::string name, std::shared_ptr<Entity> entity)
 		throw std::exception("ERROR: Tried to add a nullptr to scene");
 	
 	// set its attached scene to this cene
-	entity->attachedScene = this;
+	entity->parentScene = this;
 
 	// Make sure the desired name hasn't been taken, if so keep adding "1" until a valid name is found
 	name = GetValidName(name);
 	// set the entity's name to the valid name
 	entity->name = name;
+
+	// check if the added entity has a zIndex higher than the current highest
+	if (entity->transform.GetZIndex() > highestZIndex)
+		// set the highest to the new found highest
+		highestZIndex = entity->transform.GetZIndex();
 
 	// if it has transparecny and add to appropriate entities map
 	if(entity->GetHasTransparency())
@@ -48,12 +53,33 @@ void Scene::AddEntity(std::string name, std::shared_ptr<Entity> entity)
 
 void Scene::RemoveEntity(std::string name)
 {
+
 	// if the entity exists in opaue entites then remove it
-	if (ItemExistsInMap<std::shared_ptr<Entity>>(name, _opaqueEntities))
+	if (ItemExistsInMap<std::shared_ptr<Entity>>(name, _opaqueEntities)) {
+		// get the zIndex of the removed entity
+		unsigned int removedEntityZIndex = _opaqueEntities.at(name)->transform.GetZIndex();
+
 		_opaqueEntities.erase(name);
+
+		// check if the found entity has a zIndex that is being removed which is the current highest
+		if (removedEntityZIndex == highestZIndex)
+			// update the highest to see if there is a lower value now
+			UpdateHighestZIndex();
+	}
+
 	// else if it is in transparent entites remove it
 	else if (ItemExistsInMap<std::shared_ptr<Entity>>(name, _transparentEntities))
+	{
+		// get the zIndex of the removed entity
+		unsigned int removedEntityZIndex = _transparentEntities.at(name)->transform.GetZIndex();
+
 		_transparentEntities.erase(name);
+
+		// check if the found entity has a zIndex that is being removed which is the current highest
+		if (removedEntityZIndex == highestZIndex)
+			// update the highest to see if there is a lower value now
+			UpdateHighestZIndex();
+	}
 }
 
 std::shared_ptr<Entity> Scene::GetEntity(std::string name)
@@ -76,7 +102,7 @@ void Scene::UpdateEntityTransparency(std::shared_ptr<Entity> entity)
 	if (entity == nullptr)
 		throw std::exception("Why did you just try to update the transparency of nullptr");
 
-	if(entity->attachedScene != this)
+	if(entity->parentScene != this)
 		throw std::exception("Why did you just try to update the transparency of an entity that doesn't belong to this scene?");
 
 	// remove the entity from wherever it is
@@ -86,6 +112,57 @@ void Scene::UpdateEntityTransparency(std::shared_ptr<Entity> entity)
 	
 }
 
+void Scene::UpdateHighestZIndex()
+{
+	// first loop through each opaque entity
+	for (std::pair<std::string, std::shared_ptr<Entity>> entityIterator : _opaqueEntities)
+	{
+		std::shared_ptr<Entity> iteratedEntity = entityIterator.second;
+
+		// check if the iterated entity has an index higher than the current highest
+		if (iteratedEntity->transform.GetZIndex() > highestZIndex)
+			// set to new highest
+			highestZIndex = iteratedEntity->transform.GetZIndex();
+	}
+
+	// Now you loop through all entities with transparency 
+	for (std::pair<std::string, std::shared_ptr<Entity>> entityIterator : _transparentEntities)
+	{
+		std::shared_ptr<Entity> iteratedEntity = entityIterator.second;
+
+		// check if the iterated entity has an index higher than the current highest
+		if (iteratedEntity->transform.GetZIndex() > highestZIndex)
+			// set to new highest
+			highestZIndex = iteratedEntity->transform.GetZIndex();
+	}
+
+}
+
+// last element is taken as pivot
+int Partition(std::vector<std::shared_ptr<Entity>>& v, int start, int end) {
+
+	int pivot = end;
+	int j = start;
+	for (int i = start; i < end; ++i) {
+		if (v[i]->transform.GetZIndex() < v[pivot]->transform.GetZIndex()) {
+			swap(v[i], v[j]);
+			++j;
+		}
+	}
+	swap(v[j], v[pivot]);
+	return j;
+
+}
+
+void Quicksort(std::vector<std::shared_ptr<Entity>>& v, int start, int end) {
+
+	if (start < end) {
+		int pivot = Partition(v, start, end);
+		Quicksort(v, start, pivot - 1);
+		Quicksort(v, pivot + 1, end);
+	}
+
+}
 
 void Scene::Update()
 {
@@ -128,10 +205,31 @@ void Scene::Update()
 			}
 	}
 	
-	// Now you loop through all entities with transparency 
+	// Look, I'm not gonna lie I got kinda lazy with the below implementation of drawing objects fromt the back of the scene first then moving towards the front.
+	// I'm tired, school has been annoying, homework and tests just pile up and this is my pitty story as to why I didn't just keep an orderer map on entities
+	// sorted by index whether it be descending or ascending. I plan to fix it up in V 0.3 of the renderer. It's in the trello ok. I'm complaining to the air rn.
+
+	
+	// Just do a quick sort and order the indexes of each transparent entity. I did not copy-paste the code from https://slaystudy.com/c-vector-quicksort/
+	// I'm not gonna lie I'm like barely even focusing and so tired this is a rare time that I'll do this nasty code. It's simply a placeholder ok.
+
+
+	std::vector<std::shared_ptr<Entity>> sortedTransparentEntities;
+	
+	// fill it in
 	for (std::pair<std::string, std::shared_ptr<Entity>> entityIterator : _transparentEntities)
 	{
 		std::shared_ptr<Entity> iteratedEntity = entityIterator.second;
+		sortedTransparentEntities.push_back(iteratedEntity); // add to array
+	}
+
+	// quicksort
+	Quicksort(sortedTransparentEntities, 0, sortedTransparentEntities.size() - 1);
+
+	// Now you loop through all entities with transparency 
+	for ( std::shared_ptr<Entity> entity : sortedTransparentEntities)
+	{
+		std::shared_ptr<Entity> iteratedEntity = entity;
 
 		// if the actual entity is enabled
 		if (iteratedEntity->isActive)

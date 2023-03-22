@@ -3,8 +3,9 @@
 
 Entity::Entity(Transform transform)
 {
+    // set the transform's parent entity
+    transform.parentEntity = this;
     this->transform = transform;
-    attachedScene = nullptr; 
 }
 
 bool Entity::GetHasTransparency()
@@ -17,14 +18,14 @@ void Entity::SetHasTransparency(bool newTransparency)
 {
 
     // if entity is attached to a scene and there has been a change in the transparency of entity
-    if (attachedScene != nullptr && newTransparency != _hasTransparency)
+    if (parentScene != nullptr && newTransparency != _hasTransparency)
     {
         // set it to new transparency
         _hasTransparency = newTransparency;
         // update the entity in the scene so it can be sorted properly
-        attachedScene->UpdateEntityTransparency(std::shared_ptr<Entity>(this));
+        parentScene->UpdateEntityTransparency(std::shared_ptr<Entity>(this));
     }
-    else if (attachedScene == nullptr)
+    else if (parentScene == nullptr)
         // doesn't matter if there has been a change just set it to new value. It gets handled whenever entity is added to a scene
         _hasTransparency = newTransparency;
 }

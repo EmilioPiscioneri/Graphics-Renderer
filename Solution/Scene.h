@@ -38,6 +38,13 @@ public:
 	// If an entity's HasTransparency boolean changes after it has been added to scene this function MUST be called. Pass in the new transparency in the last newTransparency parameter
 	void UpdateEntityTransparency(std::shared_ptr<Entity> entity);
 
+	// linearly searches through all entities in scene to find the highest zIndex. 
+	// Only call this when the entity with the highest index has been removed or changed
+	void UpdateHighestZIndex();
+
+	// highest zIndex in scene
+	unsigned int highestZIndex = 0;
+
 	// main camera in scene
 	std::shared_ptr<OrthoCamera> mainCamera;
 

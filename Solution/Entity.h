@@ -15,8 +15,8 @@ public:
 	// create an entity with transform
 	Entity(Transform transform = Transform());
 
-	// scene attached to the current entity
-	Scene* attachedScene;
+	// parent scene of the current entity
+	Scene* parentScene = nullptr;
 
 	enum ComponentType {
 		SpriteRenderer,
