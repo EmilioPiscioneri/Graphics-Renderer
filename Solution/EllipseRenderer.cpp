@@ -15,6 +15,8 @@ EllipseRenderer::EllipseRenderer(glm::vec3 color, ShaderProgram* program)
 	else // else use given one
 		this->shaderProgram = program;
 
+	// the smoothing shader makes use of transparency and blending to look nice
+	this->hasTransprency = true;
 	// set type of component
 	this->type = Entity::EllipseRenderer;
 	// set colour
@@ -30,6 +32,18 @@ EllipseRenderer::~EllipseRenderer()
 	glDeleteVertexArrays(1, &rectVAO);
 	glDeleteBuffers(1, &rectVBO);
 	glDeleteBuffers(1, &rectEBO);
+}
+
+float EllipseRenderer::GetAlpha()
+{
+	return _alpha;
+}
+
+void EllipseRenderer::SetAlpha(float newAlpha)
+{
+	// just set the alpha, it doesn't actually matter as the smoothing effect must have transparency turned on no matter what
+	_alpha = newAlpha;
+	
 }
 
 void EllipseRenderer::Draw(std::shared_ptr<OrthoCamera> camera)
@@ -52,42 +66,17 @@ void EllipseRenderer::Draw(std::shared_ptr<OrthoCamera> camera)
 
 	// sey sprite transform
 	shaderProgram->SetMatrix4("modelTransform", ellipseTransform.ToMatrix());
-	// set color of sprite
-	shaderProgram->SetVector3f("spriteColor", color);
-
-	// --- Calculate different values that the fragment shader uses to calculate whether a pixel of the rect is in ellipse bounds ---
-
-	// get the centre (h,k) of the current ellipse in pixel/global coords. The position of an ellipse is at the bottom-left so add half width and height to get actual centre
-	glm::vec2 ellipseCentre = glm::vec2(ellipseTransform.position + (ellipseTransform.size / 2.0f));
-
-	// get the x radius by doing the centreX - bottomLeftPositionX
-	// E.g.  if centreX is 5 and position is 2 then the difference between 2 and 5 is 3 or 5 - 3 or centreX - positionX
-	float radiusX = ellipseCentre.x - ellipseTransform.position.x;
-
-	// same logic then applies to y axis
-	float radiusY = ellipseCentre.y - ellipseTransform.position.y;
-	
-	// convert to radians because trig functinos don't take degrees
-	float zRotationInRadians = glm::radians(ellipseTransform.rotation.z);
-	// cache what the sine and cosine of the rotation in radians is
-	float sinZRotation = sin(zRotationInRadians);
-	float cosZRotation = cos(zRotationInRadians);
-
-	// -- Send the calculated values --
-
-	shaderProgram->SetVector2f("ellipseCentre", ellipseCentre);
-	shaderProgram->SetFloat("radiusX", radiusX);
-	shaderProgram->SetFloat("radiusY", radiusY);
-	shaderProgram->SetFloat("sinModelZRotation", sinZRotation);
-	shaderProgram->SetFloat("cosModelZRotation", cosZRotation);
-
-
+	// set color of ellipse with alpha channel included
+	shaderProgram->SetVector4f("ellipseColor", glm::vec4(color, _alpha));
+	// set position and size of ellipse which is used in fragment shader for calculations
+	shaderProgram->SetVector2f("modelSize", glm::vec2(parentEntity->transform.size));
+	shaderProgram->SetVector2f("modelPosition", glm::vec2(parentEntity->transform.position));
 
 
 	//shaderProgram->SetVector2f("objectCentre", glm::vec2(ellipseTransform.position.x + ellipseTransform.size.x/2.0f, ellipseTransform.position.y + ellipseTransform.size.y/2.0f ));
 
 	// hacky fix that I don't understand, makes sure blending works properly
-	glDisable(GL_DEPTH_TEST);
+	//glDisable(GL_DEPTH_TEST);
 
 	// draw the rect
 	glBindVertexArray(this->rectVAO);
@@ -96,7 +85,7 @@ void EllipseRenderer::Draw(std::shared_ptr<OrthoCamera> camera)
 
 	glBindVertexArray(0);
 	// re enable depth testing
-	glEnable(GL_DEPTH_TEST);
+	//glEnable(GL_DEPTH_TEST);
 }
 
 void EllipseRenderer::InitRenderData()

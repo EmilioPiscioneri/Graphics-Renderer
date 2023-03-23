@@ -4,6 +4,9 @@
 #include "Component.h"
 #include "Transform.h"
 
+// forward declare scene class
+class Scene;
+
 // Base object which holds functional components which perform different behaviour in a scene.
 // NOTE: Entities should always be created as smart pointers so they never go out of scope and then become removed from stack
 class Entity
@@ -12,6 +15,8 @@ public:
 	// create an entity with transform
 	Entity(Transform transform = Transform());
 
+	// parent scene of the current entity
+	Scene* parentScene = nullptr;
 
 	enum ComponentType {
 		SpriteRenderer,
@@ -21,11 +26,22 @@ public:
 	// whether or not the entity is active in scene. Dictates whether components are called each frame
 	bool isActive = true;
 
-	// Name of entity. Will be empty until entity is added to a scene with specified name
-	std::string name = "";
+	
 
 	// transformation of entity
 	Transform transform;
+
+	// returns whether the entity has any kind of transparency. (false if opaque)
+	bool GetHasTransparency();
+
+	// sets the transparency of the current entity
+	void SetHasTransparency(bool newTransparency);
+
+	// returns the name of the entity, DOES NOT RETURN POINTER TO ENTITY NAME
+	std::string GetName();
+
+	// set the name of the current entity, boolean specifies whether to update the name of the entity in its parent scene
+	void SetName(std::string newName, bool updateInScene = true);
 
 	/// <summary>
 	/// Adds a component to entity. Does nothing if there is already a component with the same type. 
@@ -54,6 +70,11 @@ public:
 	std::map<ComponentType, std::shared_ptr<Component>>& GetComponents();
 	
 protected:
+	// Name of entity. Will be empty until entity is added to a scene with specified name
+	std::string _name = "";
+	
+	// Whether the entity has any transparency (if opaque then false)
+	bool _hasTransparency = false;
 	// Returns whether or not an entity contains a component of type
 	bool ComponentExists(ComponentType type);
 	// function that returns base component using type

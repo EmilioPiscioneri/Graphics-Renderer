@@ -16,9 +16,6 @@
 
 
 /* -- Notes/explanation of design choices --
-*  At school (during free time where I have no other work to do) I get an error about not being able to do any git operations due to a self signed certificate thing.
-	Anyway I disabled ssl verification so keep that in mind. I'm not sure if this only is local to my school computer or not.
-* 
 * Whenever soemthing is a colour I just use spelling of color because that's what most libraries will have
 * Local coordinates are normalised as a value form -1 to 1 on x and y axis. These are the values of any loaded vertices.
 * Global coordinates, assuming camera is not moved, start with bottom left of viewport as (0,0) and top right of viewport 
@@ -53,23 +50,32 @@
 	the derived component's class name as an enum. You then pass in the actual Class in the generic type parameter which casts the base component to pointer 
 	of the derived componet. Hope that makes sense. Anyway point is I was stuck on how to actually implement this feature and this was the solution I came up with.
 	May not be pretty but it is fairly simple and works
+
+* The camera faces towards the negative z-axis. Keep this in mind if you ever want to specifically set something in front of another. If you have objects a and b and you want
+	a to be in front of be you would set a to -1 (smaller number is closer to screen) and b to -2 on the z axis of the scene.
+	HOWEVER, in order to avoid this I implemented a zIndex which is like a layering system where greater numbers appear on top and smaller numbers appear behind in the scene.
+	It really just puts different values on the negative z axis in the scene. If you're familiar with CSS this won't be a foreign concept.
+* 
+* If an entity has any kinda transparency you MUST do entity.SetHasTransparency(true) so that the scene is rendered correctly
+* 
+* No two entities can share the same name under a scene
+* 
+* I implemented getters and setters for a few properties of classes solely because they need to update something else whenever the properties are changed.
+	The ellipse renderer doesn't need a getter and setter for alpha because it always needs to be transparent due to smoothing effect taking advantage of alpha
+	but I still keep it so the structure of renderer classes follows
+* 
+* I don't discard any fragments because https://stackoverflow.com/questions/8509051/is-discard-bad-for-program-performance-in-opengl.
+	I just use 0.0 alpha because I set up the engine to be able to use blending. 
 * 
 * --- Known bugs/issues ---
 * I believe that camera rotation doesn't rotate that nicely. I think it rotates the entire scene around (0,0) which produces a weird effect.
 	A fix for this would involve moving the origin of rotation to be the axis of the camera position i think
 
 * The stb_image library gives warning about like converting from a 4 byte to 8 byte number or something idk. Anyway I just ignore them because they're not a big deal.
-* 
-
-
 * --- limitations ---
 * Only 2D
 *
 * I don't include support for geometry shaders. Maybe later
-* 
-* The ellipse renderer doesn't support rotations on the x and y axis because it requires me to learn quarternions. I'm still in pre-calculus (1&2 methods) so maybe when 
-	I get to calculus I'll be willing to tackle that problem. For now I'm sticking to 2D rotations (rotation along the z axis). It also involves me dealing with the
-	complex plane which I don't wanna do. I'm making a 2D renderer anyway not 3D. It's an orthographic view as well smh my head.
 */
 
 // defualt fragment shader
@@ -133,9 +139,7 @@ int main() {
 	// --- config ---
 	// enable depth testing to ensure opengl takes into account depth when rendering
 	glEnable(GL_DEPTH_TEST);
-
-
-	// ensures openGL doesn't mess with images that don't have dimensions divisible by 4 
+	// ensures openGL doesn't fuck with images that don't have dimensions divisible by 4 
 	// Explanation: https://stackoverflow.com/questions/11042027/glpixelstoreigl-unpack-alignment-1-disadvantages
 	// Issues when this function isn't called: https://stackoverflow.com/questions/11042027/glpixelstoreigl-unpack-alignment-1-disadvantages
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
@@ -158,46 +162,79 @@ int main() {
 	// wireframe mode
 	if(wireframeMode)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	
+
+
+	// create rect entity
+	std::shared_ptr<Entity> rect = std::make_shared<Entity>();
+
+	rect->transform.size = glm::vec3(100.0f, 100.f, 0.0f);
+	rect->transform.position.x = 250.0f;
+	rect->transform.position.y = 250.0f;
+	rect->transform.SetZIndex(2);
+
+	rect->transform.rotation.z = -22.5f;
+
+	// create a new rect renderer
+	std::shared_ptr<RectangleRenderer> rectRenderer = std::make_shared<RectangleRenderer>();
+	//rectRenderer->color = glm::vec3(1.0f, 0.0f, 0.0f); // red
+	//rectRenderer->color = glm::vec3(0.0f, 1.0f, 0.0f); // green
+	rectRenderer->color = glm::vec3(0.0f, 0.0f, 1.0f); // blue
+	rectRenderer->SetAlpha(0.9f);
+
+	// add to entity
+	rect->AddComponent(Entity::ComponentType::RectangleRenderer, rectRenderer);
+
+	scene->AddEntity("rect", rect);
+
+	// create rect2 entity
+	std::shared_ptr<Entity> rect2 = std::make_shared<Entity>();
+
+	rect2->transform.size = glm::vec3(100.0f, 100.f, 0.0f);
+	rect2->transform.position.x = 500.0f;
+	rect2->transform.position.y = 250.0f;
+	rect2->transform.SetZIndex(4);
+
+	rect2->transform.rotation.z = 22.5f;
+
+	// create a new rect renderer
+	std::shared_ptr<RectangleRenderer> rectRenderer2 = std::make_shared<RectangleRenderer>();
+	//rectRenderer->color = glm::vec3(1.0f, 0.0f, 0.0f); // red
+	rectRenderer2->color = glm::vec3(0.0f, 1.0f, 0.0f); // green
+	//rectRenderer2->color = glm::vec3(0.0f, 0.0f, 1.0f); // blue
+	rectRenderer2->SetAlpha(1.0f);
+
+	// add to entity
+	rect2->AddComponent(Entity::ComponentType::RectangleRenderer, rectRenderer2);
+
+	scene->AddEntity("rect2", rect2);
+
+
 	// create sprite entity
 	std::shared_ptr<Entity> sprite = std::make_shared<Entity>(); 
 
 	sprite->transform.size = glm::vec3(400.0f, 400.f, 0.0f);
 	sprite->transform.position.x = 200.0f;
 	sprite->transform.position.y = 200.0f;
+	sprite->transform.SetZIndex(1);
 	sprite->transform.rotation.z = 45.0f;
+	
 	
 	// create a new sprite renderer
 	std::shared_ptr<SpriteRenderer> spriteRenderer = std::make_shared<SpriteRenderer>(zazaTexture);
 	spriteRenderer->color = glm::vec3(1.0f, 0.0f, 0.0f); // red
 	//renderer->color = glm::vec3(0.0f, 1.0f, 0.0f); // green
 	//renderer->color = glm::vec3(0.0f, 0.0f, 1.0f); // blue
-	
+	spriteRenderer->SetAlpha(0.7f);
+
 	// add to entity
 	sprite->AddComponent(Entity::ComponentType::SpriteRenderer, spriteRenderer);
 	//rect.AddComponent(Entity::ComponentType::SpriteRenderer, std::make_shared<SpriteRenderer>());
 
 	scene->AddEntity("sprite", sprite);
 
-	// create rect entity
-	std::shared_ptr<Entity> rect = std::make_shared<Entity>();
+	
 
-	rect->transform.size = glm::vec3(100.0f, 100.f, 0.0f);
-	rect->transform.position.x = 50.0f;
-	rect->transform.position.y = 50.0f;
-	//rect->transform.position.z = 1.0f;
-	rect->transform.rotation.z = -22.5f;
-
-	// create a new sprite renderer
-	std::shared_ptr<RectangleRenderer> rectRenderer = std::make_shared<RectangleRenderer>();
-	//rectRenderer->color = glm::vec3(1.0f, 0.0f, 0.0f); // red
-	//rectRenderer->color = glm::vec3(0.0f, 1.0f, 0.0f); // green
-	//rectRenderer->color = glm::vec3(0.0f, 0.0f, 1.0f); // blue
-
-	// add to entity
-	rect->AddComponent(Entity::ComponentType::RectangleRenderer, rectRenderer);
-
-	scene->AddEntity("rect", rect);
+	
 
 	// create ellipse entity
 	std::shared_ptr<Entity> ellipse = std::make_shared<Entity>();
@@ -205,21 +242,22 @@ int main() {
 	ellipse->transform.size = glm::vec3(400.0f, 200.f, 0.0f);
 	ellipse->transform.position.x = 200.0f;
 	ellipse->transform.position.y = 300.0f;
-	ellipse->transform.rotation.z = 22.5f;
+	ellipse->transform.SetZIndex(3);
+
+	//ellipse->transform.rotation.z = -22.5f;
 
 	// create a new sprite renderer
 	std::shared_ptr<EllipseRenderer> ellipseRenderer = std::make_shared<EllipseRenderer>();
 	//ellipseRenderer->color = glm::vec3(1.0f, 0.0f, 0.0f); // red
-	ellipseRenderer->color = glm::vec3(0.0f, 1.0f, 0.0f); // green
+	//ellipseRenderer->color = glm::vec3(0.0f, 1.0f, 0.0f); // green
 	//ellipseRenderer->color = glm::vec3(0.0f, 0.0f, 1.0f); // blue
-	//ellipseRenderer->color = glm::vec3(1.0f, 1.0f, 0.0f); // yellow
+	ellipseRenderer->color = glm::vec3(1.0f, 1.0f, 0.0f); // yellow
+	ellipseRenderer->SetAlpha(0.6f);
 
 	// add to entity
 	ellipse->AddComponent(Entity::ComponentType::EllipseRenderer, ellipseRenderer);
 
-	scene->AddEntity("zellipse", ellipse);
-
-
+	scene->AddEntity("ellipse", ellipse);
 
 	//unsigned int listenerId = scene->AddListener(Scene::EventType::Frame_End,EventListener(func));
 
@@ -233,12 +271,13 @@ int main() {
 	{
 		// --- Update current scene ---
 
-		ellipse->transform.rotation.z = glm::degrees((float)glfwGetTime());
 		scene->Update();
 
 		//float timeSinceStart = (float)glfwGetTime(); // time since start of window
 		//shaderProgram.setFloat("sinTime", sin(timeSinceStart) / 2.0f + 0.5f); // normalise sin(time since start of application) to be a value between 0-1 based
 		
+		ellipse->transform.rotation.z = glm::degrees(glfwGetTime());
+
 	}
 
 	

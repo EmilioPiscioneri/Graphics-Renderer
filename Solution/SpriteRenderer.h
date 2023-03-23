@@ -16,10 +16,18 @@ public:
     // colour of the sprite
     glm::vec3 color;
 
+    // get the alpha (transparency) value of this sprite
+    float GetAlpha();
+
+    // set the alpha (transparency) value of this sprite
+    void SetAlpha(float newAlpha);
+
     // draw a sprite using reference to scene camera and parent entity's transform
     void Draw(std::shared_ptr<OrthoCamera> camera);
 
 private:
+    // the alpha channel (transparency) of the current sprite
+    float _alpha = 1.0f;
     // shader program that the sprite renderer uses
     ShaderProgram* shaderProgram;
     // texture that the sprite renderer uses

@@ -35,6 +35,22 @@ public:
 	// Retrieve an entity frome scene based on name. Returns nullptr if not found
 	std::shared_ptr<Entity> GetEntity(std::string name);
 
+	// If an entity's HasTransparency boolean changes after it has been added to scene this function MUST be called. Pass in the new transparency in the last newTransparency parameter
+	void UpdateEntityTransparency(std::shared_ptr<Entity> entity);
+
+	// When you want to change an entity's name, call this function first and then change the private _name value of entity class. 
+	// This updates the stored maps of entities with the new name
+	void UpdateEntityName(std::shared_ptr<Entity> entity, std::string newName);
+
+	// linearly searches through all entities in scene to find the highest zIndex. 
+	// Only call this when the entity with the highest index has been removed or changed
+	void UpdateHighestZIndex();
+
+
+
+	// highest zIndex that an entity has in scene
+	unsigned int highestZIndex = 0;
+
 	// main camera in scene
 	std::shared_ptr<OrthoCamera> mainCamera;
 
@@ -69,15 +85,32 @@ public:
 private:
 	// private variables come after public because they need to access some public values
 	
-	// dictionary(map) of all entitie in a scene, indexed by name
-	std::map<std::string, std::shared_ptr<Entity>> _entities;
+	// dynamic array (vector) of pairs that hold each entity in scene (2nd value), that is ordered by their zIndex (1st value). 
+	// This vector is ordered in ascending order
+
+	// -- I use these two below in order to draw the scene back to front so blending can be done properly yknow --
+
+	// vector of each z index of each transparent entity in scene sorted in ascending order. 
+	// The indexes in this vector correlate to _sortedZIndexes
+	std::vector< unsigned int> _sortedZIndexes;
+
+	// vector of each transparent entity in scene sorted by z index in ascending order. 
+	// The indexes in this vector correlate to _sortedTransparentEntities
+	std::vector<std::shared_ptr<Entity>> _sortedTransparentEntities;
+
+
+	// dictionary(map) of all opaque entities in a scene, indexed by name
+	std::map<std::string, std::shared_ptr<Entity>> _opaqueEntities;
+
+	// dictionary(map) of all entities (with any kind of transparency) in a scene, indexed by name
+	std::map<std::string, std::shared_ptr<Entity>> _transparentEntities;
 
 	// dictionary (map) of dynamic array (vectors) of event listeners (objects with function callbacks) which are indexed by event type.
 	// There shouldn't be too much overhead with the vectors for each event type but like what do I know I'm 16 yknow
 	std::map < EventType, std::vector<EventListener>> _eventListeners;
 
 	// this is incremented each time an event listener is added. It is used to set the id of each added event listener
-	// No one is using more than 2^32 - 1 (4,294,967,295) event listeners
+	// No one is using more than 2^32 - 1 (4,294,967,295) fuckin event listeners
 	unsigned int amntOfEventListenersCreated = 0;
 
 
@@ -99,9 +132,11 @@ private:
 	// whether an item of specific name exists in a map (passed as pointer)
 	template <typename T>
 	static bool ItemExistsInMap(std::string name, std::map<std::string, T>& inputMap);
-	// Checks if desired name doesn't exist in map (passed as pointer) and keeps adding " 1" to name until there is an available unused name 
-	template <typename T>
-	static std::string GetValidNameForMap(std::string inputName, std::map<std::string, T>& inputMap);
+
+
+
+	// Checks if desired name doesn't exist and if not, keeps adding "1" to name until there is an available unused name. 
+	std::string GetValidName(std::string inputName);
 	// Run update function on a component based on type
 	void UpdateComponent(Entity::ComponentType type, std::shared_ptr<Component> component);
 	//when the last frame occurred in seconds (relative to how long program has been running for)

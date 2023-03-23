@@ -31,32 +31,159 @@ void Scene::AddEntity(std::string name, std::shared_ptr<Entity> entity)
 	if (entity == nullptr)
 		throw std::exception("ERROR: Tried to add a nullptr to scene");
 
+	// set its attached scene to this cene
+	entity->parentScene = this;
+
 	// Make sure the desired name hasn't been taken, if so keep adding "1" until a valid name is found
-	name = GetValidNameForMap<std::shared_ptr<Entity>>(name, _entities);
-	// set the entity's name to the valid name
-	entity->name = name;
-	// add to map of entities
-	_entities.insert(std::pair<std::string, std::shared_ptr<Entity>>(name, entity));
+	name = GetValidName(name);
+	// set the entity's name to the valid name, set false to not do recursion loop
+	entity->SetName(name, false);
+
+	// the z index of the entity
+	unsigned int entityZIndex = entity->transform.GetZIndex();
+
+	// check if the added entity has a zIndex higher than the current highest
+	if (entityZIndex > highestZIndex)
+		// set the highest to the new found highest
+		highestZIndex = entity->transform.GetZIndex();
+
+
+
+	// ----- deal with transparency ----
+
+	// if it has transparecny and add to appropriate entities map
+	if (entity->GetHasTransparency())
+	{
+		_transparentEntities.insert(std::pair<std::string, std::shared_ptr<Entity>>(name, entity));
+
+		// --- add the entity to the list of sorted zIndexes if it is transparent ---
+
+		// Get the lower bound iterator of the zIndex. This ends up being the index that the value is added to in vector
+		std::vector<unsigned int>::iterator lowerBound = std::lower_bound(_sortedZIndexes.begin(), _sortedZIndexes.end(), entityZIndex);
+		// doing lowerBound - vector.begin() gets the index that it would be adding to
+		unsigned int indexToAddTo = lowerBound - _sortedZIndexes.begin();
+
+		// Now that you have the lowerBound iterator you can use it to just add the zIndex and entity into our two vectors and it will be ordered
+		_sortedZIndexes.insert(lowerBound, entityZIndex); // first add the z index
+		// then add the entity. Currently there is a mismatch where the lowerBound iterator is for a vector of type unsigned int but to convert it to vector of
+		// entity shared pointer, just do beginning of vector + desired index
+		_sortedTransparentEntities.insert(_sortedTransparentEntities.begin() + indexToAddTo, entity);
+
+	}
+	else // else is opaque
+		_opaqueEntities.insert(std::pair<std::string, std::shared_ptr<Entity>>(name, entity));
 }
 
 void Scene::RemoveEntity(std::string name)
 {
-	// if the entity exists the remove it
-	if (ItemExistsInMap<std::shared_ptr<Entity>>(name, _entities))
-		_entities.erase(name);
+
+	// if the entity exists in opaue entites then remove it
+	if (ItemExistsInMap<std::shared_ptr<Entity>>(name, _opaqueEntities)) {
+		// get the zIndex of the removed entity
+		unsigned int removedEntityZIndex = _opaqueEntities.at(name)->transform.GetZIndex();
+
+		_opaqueEntities.erase(name);
+
+		// check if the found entity has a zIndex that is being removed which is the current highest
+		if (removedEntityZIndex == highestZIndex) 
+			// update the highest to see if there is a lower value now
+			UpdateHighestZIndex();
+	}
+
+	// else if it is in transparent entites remove it
+	else if (ItemExistsInMap<std::shared_ptr<Entity>>(name, _transparentEntities))
+	{
+		std::shared_ptr<Entity> entityToRemove = _transparentEntities.at(name);
+
+		// -- remove the entity from both the sortedZIndex and sortedTransparentEntities vectors --
+		// find the entity's index
+		std::vector<std::shared_ptr<Entity>>::iterator iteratorOfEntity = 
+			std::find(_sortedTransparentEntities.begin(), _sortedTransparentEntities.end(), entityToRemove);
+		// used to convert between the iterators of two different types
+		unsigned int indexOfEntity = iteratorOfEntity - _sortedTransparentEntities.begin();
+
+		// remove
+		_sortedTransparentEntities.erase(iteratorOfEntity);
+		_sortedZIndexes.erase(_sortedZIndexes.begin() + indexOfEntity);
+
+
+		// get the zIndex of the removed entity
+		unsigned int removedEntityZIndex = entityToRemove->transform.GetZIndex();
+
+		_transparentEntities.erase(name);
+
+		// check if the found entity has a zIndex that is being removed which is the current highest
+		if (removedEntityZIndex == highestZIndex)
+			// update the highest to see if there is a lower value now
+			UpdateHighestZIndex();
+	}
 }
 
 std::shared_ptr<Entity> Scene::GetEntity(std::string name)
 {
-	// if entity exists
-	if (ItemExistsInMap<std::shared_ptr<Entity>>(name, _entities))
+	// if entity exists in opaque map
+	if (ItemExistsInMap<std::shared_ptr<Entity>>(name, _opaqueEntities))
 		// return it
-		return _entities.at(name);
+		return _opaqueEntities.at(name);
+	// or it is in transparent map
+	else if(ItemExistsInMap<std::shared_ptr<Entity>>(name, _transparentEntities))
+		return _transparentEntities.at(name);
 	else
 		// else return null
 		return nullptr;
 }
 
+void Scene::UpdateEntityTransparency(std::shared_ptr<Entity> entity)
+{
+	// error checks
+	if (entity == nullptr)
+		throw std::exception("Why did you just try to update the transparency of nullptr");
+
+	if(entity->parentScene != this)
+		throw std::exception("Why did you just try to update the transparency of an entity that doesn't belong to this scene?");
+
+	// remove the entity from wherever it is
+	RemoveEntity(entity->GetName());
+	// add it back, the add function handles transparency stuff for you/me/us/idk what perspective I'm supposed to write from 
+	AddEntity(entity->GetName(), entity);
+	
+}
+
+void Scene::UpdateEntityName(std::shared_ptr<Entity> entity, std::string newName)
+{
+	// error checks
+	if (entity == nullptr)
+		throw std::exception("Why did you just try to update the name of nullptr");
+
+	if (entity->parentScene != this)
+		throw std::exception("Why did you just try to update the name of an entity that doesn't belong to this scene?");
+
+	// Remove the entity from the scene
+	RemoveEntity(entity->GetName());
+
+	// add the new name to the entity (don't need to do any validation because add entity function does for me/you/I'm conflicted on the pronoun to put here)
+	AddEntity(newName, entity);
+}
+
+void Scene::UpdateHighestZIndex()
+{
+	// first loop through each opaque entity
+	for (std::pair<std::string, std::shared_ptr<Entity>> entityIterator : _opaqueEntities)
+	{
+		std::shared_ptr<Entity> iteratedEntity = entityIterator.second;
+
+		// check if the iterated entity has an index higher than the current highest
+		if (iteratedEntity->transform.GetZIndex() > highestZIndex)
+			// set to new highest
+			highestZIndex = iteratedEntity->transform.GetZIndex();
+	}
+
+	// Now you check the last value in the vector of transparent entities sorted by zIndexes in ascending order. Also it needs to have at least 1 element
+	if (_sortedZIndexes.size() != 0 && _sortedZIndexes[_sortedZIndexes.size() - 1] > highestZIndex)
+		highestZIndex = _sortedZIndexes[_sortedZIndexes.size() - 1];
+	
+
+}
 
 void Scene::Update()
 {
@@ -84,8 +211,8 @@ void Scene::Update()
 
 
 
-	// loop through each entity
-	for (std::pair<std::string, std::shared_ptr<Entity>> entityIterator : _entities)
+	// first loop through each opaque entity
+	for (std::pair<std::string, std::shared_ptr<Entity>> entityIterator : _opaqueEntities)
 	{
 		std::shared_ptr<Entity> iteratedEntity = entityIterator.second;
 
@@ -93,6 +220,21 @@ void Scene::Update()
 		if(iteratedEntity->isActive)
 			// loop through each component under entity
 			for (std::pair<Entity::ComponentType, std::shared_ptr<Component>> componentIterator : iteratedEntity->GetComponents()) 
+			{
+				// update the iterated component
+				UpdateComponent(componentIterator.first, componentIterator.second);
+			}
+	}
+
+	// Now you loop through all entities with transparency 
+	for ( std::shared_ptr<Entity> entity : _sortedTransparentEntities)
+	{
+		std::shared_ptr<Entity> iteratedEntity = entity;
+
+		// if the actual entity is enabled
+		if (iteratedEntity->isActive)
+			// loop through each component under entity
+			for (std::pair<Entity::ComponentType, std::shared_ptr<Component>> componentIterator : iteratedEntity->GetComponents())
 			{
 				// update the iterated component
 				UpdateComponent(componentIterator.first, componentIterator.second);
@@ -173,7 +315,7 @@ void Scene::RemoveListener(EventType type, unsigned int id)
 
 	// if listener was found
 	if (listenerIndex != -1)
-		// remove it, idk why you use .begin() but you do. Some weird stuff where the parameter requires an iterator and begin is an empty has one essentially
+		// remove it, idk why you use .begin() but you do. Some weird shit where the parameter requires an iterator and begin is an empty has one essentially
 		_eventListeners[type].erase(_eventListeners[type].begin()+ listenerIndex);
 
 	
@@ -245,14 +387,13 @@ bool Scene::ItemExistsInMap(std::string name, std::map<std::string, T>& inputMap
 	return (inputMap.find(name) != inputMap.end());
 }
 
-template<typename T>
-std::string Scene::GetValidNameForMap(std::string inputName, std::map<std::string, T>& inputMap)
+std::string Scene::GetValidName(std::string inputName)
 {
 	// start with the input name and then keep adding "1" until you find a unique name
 	std::string outputName = inputName;
 
-	// while there is an element with the same name as desired one in map
-	while (ItemExistsInMap<T>(outputName, inputMap))
+	// While the name is in either opaque or transparent entity maps. I do this because I'm pretty sure maps are faster.
+	while (ItemExistsInMap <std::shared_ptr<Entity>> (outputName, _opaqueEntities) || ItemExistsInMap<std::shared_ptr<Entity>>(outputName,_transparentEntities))
 	{
 		outputName += "1"; // add 1 to the end of the name
 	}

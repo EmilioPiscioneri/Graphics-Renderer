@@ -19,6 +19,9 @@ SpriteRenderer::SpriteRenderer(Texture2D* texture, glm::vec3 color, ShaderProgra
 	this->type = Entity::SpriteRenderer;
 	// set texture
 	this->texture = texture;
+	// if the image texture uses alpha channel then set component property to use transparency
+	if (texture->imageFormat = GL_RGBA)
+		this->hasTransprency = true;
 	// set colour
 	this->color = color;
 
@@ -32,6 +35,35 @@ SpriteRenderer::~SpriteRenderer()
 	glDeleteVertexArrays(1, &rectVAO);
 	glDeleteBuffers(1, &rectVBO);
 	glDeleteBuffers(1, &rectEBO);
+}
+
+float SpriteRenderer::GetAlpha()
+{
+	return _alpha;
+}
+
+void SpriteRenderer::SetAlpha(float newAlpha)
+{
+	// if the new alpha is more than or equal to 1 (idk why it would be)
+	if (newAlpha >= 1.0f)
+	{
+		// cap it to 1 
+		_alpha = 1.0f;
+		// but also set it so transparency is off
+		this->hasTransprency = false;
+		// if the current renderer has a parent entity set it to no transparency
+		if (parentEntity != nullptr)
+			parentEntity->SetHasTransparency(false);
+	}
+	else
+	{
+		// do the same but for transparency turned on
+		_alpha = newAlpha;
+		this->hasTransprency = true;
+		// if the current renderer has a parent entity set it to has transparency
+		if (parentEntity != nullptr)
+			parentEntity->SetHasTransparency(true);
+	}
 }
 
 void SpriteRenderer::Draw(std::shared_ptr<OrthoCamera> camera)
@@ -51,8 +83,8 @@ void SpriteRenderer::Draw(std::shared_ptr<OrthoCamera> camera)
 
 	// sey sprite transform
 	shaderProgram->SetMatrix4("modelTransform", spriteTransform.ToMatrix());
-	// set color of sprite
-	shaderProgram->SetVector3f("spriteColor", color);
+	// set color of sprite with alpha channel included
+	shaderProgram->SetVector4f("spriteColor", glm::vec4(color, _alpha));
 
 	// bind texture onto corresponding texture unit
 	glActiveTexture(GL_TEXTURE0);

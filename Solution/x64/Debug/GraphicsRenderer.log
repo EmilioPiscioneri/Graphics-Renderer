@@ -1,2 +1,13 @@
-﻿  EllipseRenderer.cpp
-  GraphicsRenderer.vcxproj -> C:\Users\32633\OneDrive - De La Salle College\Subjects\Coding projects\OpenGL projects\Graphics Renderer\Solution\x64\Debug\Build\GraphicsRenderer.exe
+﻿  Main.cpp
+X:\OneDrive - De La Salle College\Subjects\Coding projects\OpenGL projects\Graphics Renderer\Solution\Main.cpp(279,47): warning C4244: '=': conversion from 'genType' to 'T', possible loss of data
+          with
+          [
+              genType=double
+          ]
+          and
+          [
+              T=float
+          ]
+C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.32.31326\include\memory(3423,56): warning C4244: 'argument': conversion from 'const int' to 'float', possible loss of data
+X:\OneDrive - De La Salle College\Subjects\Coding projects\OpenGL projects\Graphics Renderer\Solution\Main.cpp(134): message : see reference to function template instantiation 'std::unique_ptr<Scene,std::default_delete<Scene>> std::make_unique<Scene,GLFWwindow*&,const int&,const int&,0>(GLFWwindow *&,const int &,const int &)' being compiled
+  GraphicsRenderer.vcxproj -> X:\OneDrive - De La Salle College\Subjects\Coding projects\OpenGL projects\Graphics Renderer\Solution\x64\Debug\Build\GraphicsRenderer.exe

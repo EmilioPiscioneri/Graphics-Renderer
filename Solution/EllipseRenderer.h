@@ -17,10 +17,18 @@ public:
     // colour of the ellipse
     glm::vec3 color;
 
+    // get the alpha (transparency) value of this ellipse
+    float GetAlpha();
+
+    // set the alpha (transparency) value of this ellipse. 
+    void SetAlpha(float newAlpha);
+
     // draw an ellipse using reference to scene camera and parent entity's transform
     void Draw(std::shared_ptr<OrthoCamera> camera);
 
 private:
+    // the alpha channel (transparency) of the current sprite
+    float _alpha = 1.0f;
     // shader program that the renderer uses
     ShaderProgram* shaderProgram;
     // default vertex sahader

@@ -32,6 +32,35 @@ RectangleRenderer::~RectangleRenderer()
 	glDeleteBuffers(1, &rectEBO);
 }
 
+float RectangleRenderer::GetAlpha()
+{
+	return _alpha;
+}
+
+void RectangleRenderer::SetAlpha(float newAlpha)
+{
+	// if the new alpha is more than or equal to 1 (idk why it would be)
+	if (newAlpha >= 1.0f)
+	{
+		// cap it to 1 
+		_alpha = 1.0f;
+		// but also set it so transparency is off
+		this->hasTransprency = false;
+		// if the current renderer has a parent entity set it to no transparency
+		if (parentEntity != nullptr)
+			parentEntity->SetHasTransparency(false);
+	}
+	else 
+	{
+		// do the same but for transparency turned on
+		_alpha = newAlpha;
+		this->hasTransprency = true;
+		// if the current renderer has a parent entity set it to has transparency
+		if (parentEntity != nullptr)
+			parentEntity->SetHasTransparency(true);
+	}
+}
+
 void RectangleRenderer::Draw(std::shared_ptr<OrthoCamera> camera)
 {
 	if (parentEntity == nullptr)
@@ -51,8 +80,8 @@ void RectangleRenderer::Draw(std::shared_ptr<OrthoCamera> camera)
 
 	// sey sprite transform
 	shaderProgram->SetMatrix4("modelTransform", spriteTransform.ToMatrix());
-	// set color of sprite
-	shaderProgram->SetVector3f("spriteColor", color);
+	// set color of rect with alpha channel included
+	shaderProgram->SetVector4f("rectColor", glm::vec4(color, _alpha));
 
 
 	// draw the rect

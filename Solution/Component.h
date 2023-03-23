@@ -11,5 +11,8 @@ public:
 	unsigned int type;
 	// parent entity of component
 	Entity* parentEntity = nullptr;
+
+	// whether the current component has transparency. (false if opaque)
+	bool hasTransprency = false;
 };
 
