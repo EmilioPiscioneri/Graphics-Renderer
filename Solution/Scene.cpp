@@ -315,7 +315,7 @@ void Scene::RemoveListener(EventType type, unsigned int id)
 
 	// if listener was found
 	if (listenerIndex != -1)
-		// remove it, idk why you use .begin() but you do. Some weird shit where the parameter requires an iterator and begin is an empty has one essentially
+		// remove it, idk why you use .begin() but you do. Some weird stuff where the parameter requires an iterator and begin is an empty has one essentially
 		_eventListeners[type].erase(_eventListeners[type].begin()+ listenerIndex);
 
 	

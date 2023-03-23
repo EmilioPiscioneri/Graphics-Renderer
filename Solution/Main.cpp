@@ -16,6 +16,10 @@
 
 
 /* -- Notes/explanation of design choices --
+*  At school (during free time where I have no other work to do) I get an error about not being able to do any git operations due to a self signed certificate thing.
+	Anyway I disabled ssl verification so keep that in mind. I'm not sure if this only is local to my school computer or not.
+* 
+* 
 * Whenever soemthing is a colour I just use spelling of color because that's what most libraries will have
 * Local coordinates are normalised as a value form -1 to 1 on x and y axis. These are the values of any loaded vertices.
 * Global coordinates, assuming camera is not moved, start with bottom left of viewport as (0,0) and top right of viewport 
@@ -67,6 +71,9 @@
 * I don't discard any fragments because https://stackoverflow.com/questions/8509051/is-discard-bad-for-program-performance-in-opengl.
 	I just use 0.0 alpha because I set up the engine to be able to use blending. 
 * 
+* The higher your max zIndex for a scene is, the greater a number the far plane of scene camera must be
+
+* 
 * --- Known bugs/issues ---
 * I believe that camera rotation doesn't rotate that nicely. I think it rotates the entire scene around (0,0) which produces a weird effect.
 	A fix for this would involve moving the origin of rotation to be the axis of the camera position i think
@@ -76,6 +83,10 @@
 * Only 2D
 *
 * I don't include support for geometry shaders. Maybe later
+*
+* The ellipse renderer doesn't support rotations on the x and y axis because it requires me to learn quarternions. I'm still in pre-calculus (1&2 methods) so maybe when 
+	I get to calculus I'll be willing to tackle that problem. For now I'm sticking to 2D rotations (rotation along the z axis). It also involves me dealing with the
+	complex plane which I don't wanna do. I'm making a 2D renderer anyway not 3D. It's an orthographic view as well smh my head.
 */
 
 // defualt fragment shader
@@ -139,7 +150,7 @@ int main() {
 	// --- config ---
 	// enable depth testing to ensure opengl takes into account depth when rendering
 	glEnable(GL_DEPTH_TEST);
-	// ensures openGL doesn't fuck with images that don't have dimensions divisible by 4 
+	// ensures openGL doesn't mess with images that don't have dimensions divisible by 4
 	// Explanation: https://stackoverflow.com/questions/11042027/glpixelstoreigl-unpack-alignment-1-disadvantages
 	// Issues when this function isn't called: https://stackoverflow.com/questions/11042027/glpixelstoreigl-unpack-alignment-1-disadvantages
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
@@ -270,13 +281,15 @@ int main() {
 	while (!glfwWindowShouldClose(mainWindow))
 	{
 		// --- Update current scene ---
-
+		
+		// rotate ellipse (revolutions are every 2*pi seconds)
+		ellipse->transform.rotation.z = glm::degrees(glfwGetTime());
 		scene->Update();
 
 		//float timeSinceStart = (float)glfwGetTime(); // time since start of window
 		//shaderProgram.setFloat("sinTime", sin(timeSinceStart) / 2.0f + 0.5f); // normalise sin(time since start of application) to be a value between 0-1 based
 		
-		ellipse->transform.rotation.z = glm::degrees(glfwGetTime());
+		
 
 	}
 
