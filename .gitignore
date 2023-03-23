@@ -30,3 +30,6 @@
 *.out
 *.app
 /Solution/.vs
+
+#Just straight up ignoring these folders
+/Solution/x64/Debug
