@@ -115,6 +115,18 @@ void ShaderProgram::SetMatrix4(const char* uniformName, glm::mat4 matrix)
 	glUniformMatrix4fv(uniformLocation, 1, GL_FALSE, glm::value_ptr(matrix));
 }
 
+void ShaderProgram::SetVector4f(const char* uniformName, glm::vec4 vector)
+{
+	// get location of uniform
+	int uniformLocation = glGetUniformLocation(ID, uniformName);
+	if (uniformLocation == -1)
+	{
+		std::cout << "ERROR: Tried to assign float vec4 to uniform " << uniformName << " which doesn't exist" << std::endl;
+		return;
+	}
+	glUniform4f(uniformLocation, vector.x, vector.y, vector.z, vector.w);
+}
+
 void ShaderProgram::SetVector3f(const char* uniformName, glm::vec3 vector)
 {
 	// get location of uniform

@@ -60,6 +60,13 @@
 * 
 * No two entities can share the same name under a scene
 * 
+* I implemented getters and setters for a few properties of classes solely because they need to update something else whenever the properties are changed.
+	The ellipse renderer doesn't need a getter and setter for alpha because it always needs to be transparent due to smoothing effect taking advantage of alpha
+	but I still keep it so the structure of renderer classes follows
+* 
+* I don't discard any fragments because https://stackoverflow.com/questions/8509051/is-discard-bad-for-program-performance-in-opengl.
+	I just use 0.0 alpha because I set up the engine to be able to use blending. 
+* 
 * --- Known bugs/issues ---
 * I believe that camera rotation doesn't rotate that nicely. I think it rotates the entire scene around (0,0) which produces a weird effect.
 	A fix for this would involve moving the origin of rotation to be the axis of the camera position i think
@@ -172,11 +179,35 @@ int main() {
 	//rectRenderer->color = glm::vec3(1.0f, 0.0f, 0.0f); // red
 	//rectRenderer->color = glm::vec3(0.0f, 1.0f, 0.0f); // green
 	rectRenderer->color = glm::vec3(0.0f, 0.0f, 1.0f); // blue
-	
+	rectRenderer->SetAlpha(0.9f);
+
 	// add to entity
 	rect->AddComponent(Entity::ComponentType::RectangleRenderer, rectRenderer);
 
-	scene->AddEntity("brect", rect);
+	scene->AddEntity("rect", rect);
+
+	// create rect2 entity
+	std::shared_ptr<Entity> rect2 = std::make_shared<Entity>();
+
+	rect2->transform.size = glm::vec3(100.0f, 100.f, 0.0f);
+	rect2->transform.position.x = 500.0f;
+	rect2->transform.position.y = 250.0f;
+	rect2->transform.SetZIndex(4);
+
+	rect2->transform.rotation.z = 22.5f;
+
+	// create a new rect renderer
+	std::shared_ptr<RectangleRenderer> rectRenderer2 = std::make_shared<RectangleRenderer>();
+	//rectRenderer->color = glm::vec3(1.0f, 0.0f, 0.0f); // red
+	rectRenderer2->color = glm::vec3(0.0f, 1.0f, 0.0f); // green
+	//rectRenderer2->color = glm::vec3(0.0f, 0.0f, 1.0f); // blue
+	rectRenderer2->SetAlpha(1.0f);
+
+	// add to entity
+	rect2->AddComponent(Entity::ComponentType::RectangleRenderer, rectRenderer2);
+
+	scene->AddEntity("rect2", rect2);
+
 
 	// create sprite entity
 	std::shared_ptr<Entity> sprite = std::make_shared<Entity>(); 
@@ -187,17 +218,19 @@ int main() {
 	sprite->transform.SetZIndex(1);
 	sprite->transform.rotation.z = 45.0f;
 	
+	
 	// create a new sprite renderer
 	std::shared_ptr<SpriteRenderer> spriteRenderer = std::make_shared<SpriteRenderer>(zazaTexture);
 	spriteRenderer->color = glm::vec3(1.0f, 0.0f, 0.0f); // red
 	//renderer->color = glm::vec3(0.0f, 1.0f, 0.0f); // green
 	//renderer->color = glm::vec3(0.0f, 0.0f, 1.0f); // blue
-	
+	spriteRenderer->SetAlpha(0.7f);
+
 	// add to entity
 	sprite->AddComponent(Entity::ComponentType::SpriteRenderer, spriteRenderer);
 	//rect.AddComponent(Entity::ComponentType::SpriteRenderer, std::make_shared<SpriteRenderer>());
 
-	scene->AddEntity("csprite", sprite);
+	scene->AddEntity("sprite", sprite);
 
 	
 
@@ -218,14 +251,13 @@ int main() {
 	//ellipseRenderer->color = glm::vec3(1.0f, 0.0f, 0.0f); // red
 	//ellipseRenderer->color = glm::vec3(0.0f, 1.0f, 0.0f); // green
 	//ellipseRenderer->color = glm::vec3(0.0f, 0.0f, 1.0f); // blue
-	//ellipseRenderer->color = glm::vec3(1.0f, 1.0f, 0.0f); // yellow
+	ellipseRenderer->color = glm::vec3(1.0f, 1.0f, 0.0f); // yellow
+	ellipseRenderer->SetAlpha(0.6f);
 
 	// add to entity
 	ellipse->AddComponent(Entity::ComponentType::EllipseRenderer, ellipseRenderer);
 
-	scene->AddEntity("aellipse", ellipse);
-
-
+	scene->AddEntity("ellipse", ellipse);
 
 	//unsigned int listenerId = scene->AddListener(Scene::EventType::Frame_End,EventListener(func));
 
@@ -244,6 +276,8 @@ int main() {
 		//float timeSinceStart = (float)glfwGetTime(); // time since start of window
 		//shaderProgram.setFloat("sinTime", sin(timeSinceStart) / 2.0f + 0.5f); // normalise sin(time since start of application) to be a value between 0-1 based
 		
+		ellipse->transform.rotation.z = glm::degrees(glfwGetTime());
+
 	}
 
 	

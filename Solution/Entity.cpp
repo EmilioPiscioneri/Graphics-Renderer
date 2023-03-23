@@ -26,8 +26,31 @@ void Entity::SetHasTransparency(bool newTransparency)
         parentScene->UpdateEntityTransparency(std::shared_ptr<Entity>(this));
     }
     else if (parentScene == nullptr)
-        // doesn't matter if there has been a change just set it to new value. It gets handled whenever entity is added to a scene
+        // else isn't attached to scene, doesn't matter if there has been a change just set it to new value. It gets handled whenever entity is added to a scene
         _hasTransparency = newTransparency;
+}
+
+std::string Entity::GetName()
+{
+    // return the entity's name
+    return _name;
+}
+
+void Entity::SetName(std::string newName, bool updateInScene)
+{
+    // if entity is attached to a scene and there has been an actual change in the name of the entity
+    if (updateInScene && parentScene != nullptr && newName != _name)
+    {
+        // update the entity's name in scene
+        parentScene->UpdateEntityName(std::shared_ptr<Entity>(this), newName);
+        // Don't need to set the new name of entity, it is set throught the UpdateEntityName function
+        
+    }
+    else if (!updateInScene || parentScene == nullptr)
+        // else isn't attached to a scene or specifically told not to update
+        // then, doesn't matter if there has been a change just set it to new value. It gets handled whenever entity is added to a scene if it hasn't been added
+        _name = newName;
+
 }
 
 void Entity::AddComponent(ComponentType type, std::shared_ptr<Component> component)
@@ -46,7 +69,7 @@ void Entity::AddComponent(ComponentType type, std::shared_ptr<Component> compone
         _components.insert(std::pair<ComponentType, std::shared_ptr<Component>>(type, component));
     else
         // can't specify what type of component enum tried to add because that requires a switch case and I should just get it right first time yknow
-        std::cout << "ERROR: Tried to add component to entity " << name << " which already exists" << std::endl;
+        std::cout << "ERROR: Tried to add component to entity " << _name << " which already exists" << std::endl;
 }
 
 

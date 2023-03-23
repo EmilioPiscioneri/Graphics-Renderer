@@ -1,7 +1,7 @@
 #version 330 core
 out vec4 FragColor;
 
-uniform vec3 spriteColor;
+uniform vec4 ellipseColor;
 uniform vec2 screenSize;
 uniform vec2 modelSize; // size of ellipse (in global coordinates)
 uniform vec2 modelPosition; // position of ellipse (in global coordinates) 
@@ -49,15 +49,17 @@ void main()
 	//	You can visualise how the closer the input of the general equation is to 1 starting from 0.95, the more it decreases in transparency
 
 	// -- Non smoothed ellipse code --
+//	float outputAlpha = 1.0f;
 //	if(! PositionIsInCircle(pixelPos, ellipseCentre, radiusX, radiusY))
 //		// don't include pixel in output
-//		discard;
+//		outputAlpha = 0.0f;
 		
 //	// else just output normally
-//	FragColor = vec4(spriteColor, 1.0) ; // set to spriteColor
+//	FragColor = vec4(spriteColor, outputAlpha) ; // set to spriteColor with output alpha
 
 	// -- smoothed ellipse code --
-	FragColor = vec4(spriteColor, GetAlphaOfEllipse(pixelPos, ellipseCentre, radiusX, radiusY)) ; // set to spriteColor and have alpha be the result of smoothing output
+	// set to ellipseColor and have alpha be the result of smoothing output blended with ellipse color
+	FragColor = vec4(ellipseColor.xyz, GetAlphaOfEllipse(pixelPos, ellipseCentre, radiusX, radiusY)) ; 
 
 } 
 
@@ -76,11 +78,7 @@ float GetAlphaOfEllipse(vec2 position, vec2 centre, float radiusX, float radiusY
 	// apply smoothing to the result
 	float smoothedResult = 1-smoothstep(1.0 - smoothAmount ,1, result);
 
-	// if the value is within ellipse
-	if(smoothedResult <= 1.0)
-		// 
-		return smoothedResult;
-	else
-		// discard fragment
-		discard;
+	// just return smoothed result, automatically returns 0 if it is out of ellipse bounds. Don't do discarding because 
+	// https://stackoverflow.com/questions/8509051/is-discard-bad-for-program-performance-in-opengl
+	return smoothedResult;
 }

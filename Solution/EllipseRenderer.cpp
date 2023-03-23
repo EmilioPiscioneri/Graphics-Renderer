@@ -34,6 +34,18 @@ EllipseRenderer::~EllipseRenderer()
 	glDeleteBuffers(1, &rectEBO);
 }
 
+float EllipseRenderer::GetAlpha()
+{
+	return _alpha;
+}
+
+void EllipseRenderer::SetAlpha(float newAlpha)
+{
+	// just set the alpha, it doesn't actually matter as the smoothing effect must have transparency turned on no matter what
+	_alpha = newAlpha;
+	
+}
+
 void EllipseRenderer::Draw(std::shared_ptr<OrthoCamera> camera)
 {
 	
@@ -54,8 +66,8 @@ void EllipseRenderer::Draw(std::shared_ptr<OrthoCamera> camera)
 
 	// sey sprite transform
 	shaderProgram->SetMatrix4("modelTransform", ellipseTransform.ToMatrix());
-	// set color of sprite
-	shaderProgram->SetVector3f("spriteColor", color);
+	// set color of ellipse with alpha channel included
+	shaderProgram->SetVector4f("ellipseColor", glm::vec4(color, _alpha));
 	// set position and size of ellipse which is used in fragment shader for calculations
 	shaderProgram->SetVector2f("modelSize", glm::vec2(parentEntity->transform.size));
 	shaderProgram->SetVector2f("modelPosition", glm::vec2(parentEntity->transform.position));

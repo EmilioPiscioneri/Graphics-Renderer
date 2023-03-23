@@ -24,7 +24,7 @@ void Transform::SetZIndex(unsigned int newIndex)
         // the below conditional is meant to improve the speed of the program because we only want to run the scene->UpdateHighestZIndex function when we have to
 
         // check if this entity had the scene's highest index but it has been changed to a lower value
-        if (scene->highestZIndex == _zIndex && newIndex < scene->highestZIndex)
+        if (scene->highestZIndex == _zIndex && newIndex < scene->highestZIndex) 
             // if this is true that means that an entity with the highest zIndex has changed zIndex so we need to run a check for any changes
             scene->UpdateHighestZIndex();
         // else if the new index is higher than the scene's current one

@@ -1,9 +1,9 @@
 #version 330 core
 out vec4 FragColor;
 
-uniform vec3 spriteColor;
+uniform vec4 rectColor;
 
 void main()
 {
-	FragColor = vec4(spriteColor, 1.0) ; // set to spriteColor
+	FragColor = rectColor; // set to rectColor
 } 
