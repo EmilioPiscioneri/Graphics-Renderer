@@ -65,8 +65,8 @@
     <None Include="FragmentShaders\SpriteDefault.frag" />
     <None Include="FragmentShaders\RectangleDefault.frag" />
     <None Include="VertexShaders\RectangleDefault.vert" />
-    <None Include="VertexShaders\EllipseDefault.vert" />
     <None Include="FragmentShaders\EllipseDefault.frag" />
+    <None Include="VertexShaders\EllipseDefault.vert" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ShaderProgram.h">

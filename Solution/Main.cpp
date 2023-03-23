@@ -16,9 +16,6 @@
 
 
 /* -- Notes/explanation of design choices --
-*  At school (during free time where I have no other work to do) I get an error about not being able to do any git operations due to a self signed certificate thing.
-	Anyway I disabled ssl verification so keep that in mind. I'm not sure if this only is local to my school computer or not.
-* 
 * Whenever soemthing is a colour I just use spelling of color because that's what most libraries will have
 * Local coordinates are normalised as a value form -1 to 1 on x and y axis. These are the values of any loaded vertices.
 * Global coordinates, assuming camera is not moved, start with bottom left of viewport as (0,0) and top right of viewport 
@@ -75,17 +72,10 @@
 	A fix for this would involve moving the origin of rotation to be the axis of the camera position i think
 
 * The stb_image library gives warning about like converting from a 4 byte to 8 byte number or something idk. Anyway I just ignore them because they're not a big deal.
-* 
-
-
 * --- limitations ---
 * Only 2D
 *
 * I don't include support for geometry shaders. Maybe later
-* 
-* The ellipse renderer doesn't support rotations on the x and y axis because it requires me to learn quarternions. I'm still in pre-calculus (1&2 methods) so maybe when 
-	I get to calculus I'll be willing to tackle that problem. For now I'm sticking to 2D rotations (rotation along the z axis). It also involves me dealing with the
-	complex plane which I don't wanna do. I'm making a 2D renderer anyway not 3D. It's an orthographic view as well smh my head.
 */
 
 // defualt fragment shader
@@ -149,9 +139,7 @@ int main() {
 	// --- config ---
 	// enable depth testing to ensure opengl takes into account depth when rendering
 	glEnable(GL_DEPTH_TEST);
-
-
-	// ensures openGL doesn't mess with images that don't have dimensions divisible by 4 
+	// ensures openGL doesn't fuck with images that don't have dimensions divisible by 4 
 	// Explanation: https://stackoverflow.com/questions/11042027/glpixelstoreigl-unpack-alignment-1-disadvantages
 	// Issues when this function isn't called: https://stackoverflow.com/questions/11042027/glpixelstoreigl-unpack-alignment-1-disadvantages
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
@@ -256,12 +244,12 @@ int main() {
 	ellipse->transform.position.y = 300.0f;
 	ellipse->transform.SetZIndex(3);
 
-	ellipse->transform.rotation.z = 22.5f;
+	//ellipse->transform.rotation.z = -22.5f;
 
 	// create a new sprite renderer
 	std::shared_ptr<EllipseRenderer> ellipseRenderer = std::make_shared<EllipseRenderer>();
 	//ellipseRenderer->color = glm::vec3(1.0f, 0.0f, 0.0f); // red
-	ellipseRenderer->color = glm::vec3(0.0f, 1.0f, 0.0f); // green
+	//ellipseRenderer->color = glm::vec3(0.0f, 1.0f, 0.0f); // green
 	//ellipseRenderer->color = glm::vec3(0.0f, 0.0f, 1.0f); // blue
 	ellipseRenderer->color = glm::vec3(1.0f, 1.0f, 0.0f); // yellow
 	ellipseRenderer->SetAlpha(0.6f);
@@ -283,7 +271,6 @@ int main() {
 	{
 		// --- Update current scene ---
 
-		ellipse->transform.rotation.z = glm::degrees((float)glfwGetTime());
 		scene->Update();
 
 		//float timeSinceStart = (float)glfwGetTime(); // time since start of window

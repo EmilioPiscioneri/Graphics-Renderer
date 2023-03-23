@@ -68,34 +68,9 @@ void EllipseRenderer::Draw(std::shared_ptr<OrthoCamera> camera)
 	shaderProgram->SetMatrix4("modelTransform", ellipseTransform.ToMatrix());
 	// set color of ellipse with alpha channel included
 	shaderProgram->SetVector4f("ellipseColor", glm::vec4(color, _alpha));
-
-	// --- Calculate different values that the fragment shader uses to calculate whether a pixel of the rect is in ellipse bounds ---
-
-	// get the centre (h,k) of the current ellipse in pixel/global coords. The position of an ellipse is at the bottom-left so add half width and height to get actual centre
-	glm::vec2 ellipseCentre = glm::vec2(ellipseTransform.position + (ellipseTransform.size / 2.0f));
-
-	// get the x radius by doing the centreX - bottomLeftPositionX
-	// E.g.  if centreX is 5 and position is 2 then the difference between 2 and 5 is 3 or 5 - 3 or centreX - positionX
-	float radiusX = ellipseCentre.x - ellipseTransform.position.x;
-
-	// same logic then applies to y axis
-	float radiusY = ellipseCentre.y - ellipseTransform.position.y;
-	
-	// convert to radians because trig functinos don't take degrees
-	float zRotationInRadians = glm::radians(ellipseTransform.rotation.z);
-	// cache what the sine and cosine of the rotation in radians is
-	float sinZRotation = sin(zRotationInRadians);
-	float cosZRotation = cos(zRotationInRadians);
-
-	// -- Send the calculated values --
-
-	shaderProgram->SetVector2f("ellipseCentre", ellipseCentre);
-	shaderProgram->SetFloat("radiusX", radiusX);
-	shaderProgram->SetFloat("radiusY", radiusY);
-	shaderProgram->SetFloat("sinModelZRotation", sinZRotation);
-	shaderProgram->SetFloat("cosModelZRotation", cosZRotation);
-
-
+	// set position and size of ellipse which is used in fragment shader for calculations
+	shaderProgram->SetVector2f("modelSize", glm::vec2(parentEntity->transform.size));
+	shaderProgram->SetVector2f("modelPosition", glm::vec2(parentEntity->transform.position));
 
 
 	//shaderProgram->SetVector2f("objectCentre", glm::vec2(ellipseTransform.position.x + ellipseTransform.size.x/2.0f, ellipseTransform.position.y + ellipseTransform.size.y/2.0f ));

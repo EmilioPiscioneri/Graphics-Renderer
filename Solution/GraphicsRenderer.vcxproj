@@ -158,11 +158,11 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="FragmentShaders\Default.frag" />
-    <None Include="FragmentShaders\EllipseDefault.frag" />
     <None Include="FragmentShaders\RectangleDefault.frag" />
     <None Include="VertexShaders\EllipseDefault.vert" />
     <None Include="FragmentShaders\SpriteDefault.frag" />
     <None Include="VertexShaders\Default.vert" />
+    <None Include="FragmentShaders\EllipseDefault.frag" />
     <None Include="VertexShaders\RectangleDefault.vert" />
     <None Include="VertexShaders\SpriteDefault.vert" />
   </ItemGroup>
