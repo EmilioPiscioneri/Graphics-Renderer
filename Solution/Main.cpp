@@ -29,7 +29,7 @@
 * when you do global*2 or right hand side * 2 you get 2:(1*2) -> 2:2 = 1:1
 * But that math is done by my code so it is not a worry when using my transform class which handles that
 * 
-* Rotations are clockwise
+* Rotations are clockwise. Rotations use degrees because it's easier to code with them. I dont' wanna do (pi*3)/2 to rotate 270 degrees yknow
 * 
 * Event listeners are objects with an id because it is a more robust system where just in case you wanted to attach the same function to a specific event type you can.
 * My original method was storing dictionary of function pointers where you can only attach a specific function to an event type once. This means if 
@@ -73,6 +73,9 @@
 * 
 * The higher your max zIndex for a scene is, the greater a number the far plane of scene camera must be
 
+* If you turn autoUpdateFarPlane off for a scene, it will only render any entities where (scene.highestZIndex - entity.zIndex) <  mainCamera.farPlane
+* 
+* If you're using a default transform constructor beware that the default values are (0,0) or (0,0,0) so you have to actually set them to see a value on the screen
 * 
 * --- Known bugs/issues ---
 * I believe that camera rotation doesn't rotate that nicely. I think it rotates the entire scene around (0,0) which produces a weird effect.
@@ -174,13 +177,12 @@ int main() {
 	if(wireframeMode)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-
 	// create rect entity
 	std::shared_ptr<Entity> rect = std::make_shared<Entity>();
 
-	rect->transform.size = glm::vec3(100.0f, 100.f, 0.0f);
-	rect->transform.position.x = 250.0f;
-	rect->transform.position.y = 250.0f;
+	rect->transform.offsetSize = glm::vec3(100.0f, 100.f, 0.0f);
+	rect->transform.offsetPosition.x = 250.0f;
+	rect->transform.offsetPosition.y = 250.0f;
 	rect->transform.SetZIndex(2);
 
 	rect->transform.rotation.z = -22.5f;
@@ -200,9 +202,9 @@ int main() {
 	// create rect2 entity
 	std::shared_ptr<Entity> rect2 = std::make_shared<Entity>();
 
-	rect2->transform.size = glm::vec3(100.0f, 100.f, 0.0f);
-	rect2->transform.position.x = 500.0f;
-	rect2->transform.position.y = 250.0f;
+	rect2->transform.offsetSize = glm::vec3(100.0f, 100.f, 0.0f);
+	rect2->transform.offsetPosition.x = 500.0f;
+	rect2->transform.offsetPosition.y = 250.0f;
 	rect2->transform.SetZIndex(4);
 
 	rect2->transform.rotation.z = 22.5f;
@@ -223,9 +225,9 @@ int main() {
 	// create sprite entity
 	std::shared_ptr<Entity> sprite = std::make_shared<Entity>(); 
 
-	sprite->transform.size = glm::vec3(400.0f, 400.f, 0.0f);
-	sprite->transform.position.x = 200.0f;
-	sprite->transform.position.y = 200.0f;
+	sprite->transform.offsetSize = glm::vec3(400.0f, 400.f, 0.0f);
+	sprite->transform.offsetPosition.x = 200.0f;
+	sprite->transform.offsetPosition.y = 200.0f;
 	sprite->transform.SetZIndex(1);
 	sprite->transform.rotation.z = 45.0f;
 	
@@ -250,9 +252,14 @@ int main() {
 	// create ellipse entity
 	std::shared_ptr<Entity> ellipse = std::make_shared<Entity>();
 
-	ellipse->transform.size = glm::vec3(400.0f, 200.f, 0.0f);
-	ellipse->transform.position.x = 200.0f;
-	ellipse->transform.position.y = 300.0f;
+	//ellipse->transform.type = Transform::Sticky;
+
+	//ellipse->transform.offsetSize = glm::vec3(400.0f, 200.f, 0.0f);
+	ellipse->transform.relativeSize = glm::vec2(0.5f, 0.25f);
+	//ellipse->transform.offsetPosition.x = 200.0f;
+	//ellipse->transform.offsetPosition.y = 300.0f;
+	ellipse->transform.relativePosition.x = 0.25f;
+	ellipse->transform.relativePosition.y = 0.375f;
 	ellipse->transform.SetZIndex(3);
 
 	//ellipse->transform.rotation.z = -22.5f;
@@ -274,18 +281,42 @@ int main() {
 
 	//std::cout << "Created a listener with id " << listenerId << std::endl;
 
+	
+
+
 	// set a breakpoint here if you need to check variables before they go into main loop
 	std::cout << "checkpoint" << std::endl;
+
+
+	// temp camera movement config
+	float camSpeed = 500.0f; // how many global coords cam moves per second
 
 	// main loop that finishes when window is closed.
 	while (!glfwWindowShouldClose(mainWindow))
 	{
 		// --- Update current scene ---
 		
-		// rotate ellipse (revolutions are every 2*pi seconds)
-		ellipse->transform.rotation.z = glm::degrees(glfwGetTime());
-		scene->Update();
+		// temp camera movement code
 
+		float deltaTime = (float)scene->deltaTime;
+
+		// if W pressed
+		if (glfwGetKey(mainWindow, GLFW_KEY_W) == GLFW_PRESS)
+			scene->mainCamera->position.y += camSpeed * deltaTime;
+		// if A pressed
+		if (glfwGetKey(mainWindow, GLFW_KEY_A) == GLFW_PRESS)
+			scene->mainCamera->position.x -= camSpeed * deltaTime;
+		// if S pressed
+		if (glfwGetKey(mainWindow, GLFW_KEY_S) == GLFW_PRESS)
+			scene->mainCamera->position.y -= camSpeed * deltaTime;
+		// if D pressed
+		if (glfwGetKey(mainWindow, GLFW_KEY_D) == GLFW_PRESS)
+			scene->mainCamera->position.x += camSpeed * deltaTime;
+
+		// rotate ellipse (revolutions are every 2*pi seconds)
+		ellipse->transform.rotation.z = glm::degrees((float)glfwGetTime());
+		scene->Update();
+		
 		//float timeSinceStart = (float)glfwGetTime(); // time since start of window
 		//shaderProgram.setFloat("sinTime", sin(timeSinceStart) / 2.0f + 0.5f); // normalise sin(time since start of application) to be a value between 0-1 based
 		

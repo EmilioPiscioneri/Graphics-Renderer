@@ -65,20 +65,23 @@ void EllipseRenderer::Draw(std::shared_ptr<OrthoCamera> camera)
 	shaderProgram->SetMatrix4("projection", projection);
 
 	// sey sprite transform
-	shaderProgram->SetMatrix4("modelTransform", ellipseTransform.ToMatrix());
+	shaderProgram->SetMatrix4("modelTransform", ellipseTransform.ToMatrix(camera));
 	// set color of ellipse with alpha channel included
 	shaderProgram->SetVector4f("ellipseColor", glm::vec4(color, _alpha));
 	// --- Calculate different values that the fragment shader uses to calculate whether a pixel of the rect is in ellipse bounds ---
 
+	// get the global pos of the current ellipse as it will be its actual position in global coords. We want this value relative to camera so do - camera position
+	glm::vec2 ellipseGlobalPosition = ellipseTransform.GetGlobalPosition(camera) - camera->position;
+
 	// get the centre (h,k) of the current ellipse in pixel/global coords. The position of an ellipse is at the bottom-left so add half width and height to get actual centre
-	glm::vec2 ellipseCentre = ellipseTransform.position + glm::vec2 (ellipseTransform.size / 2.0f);
+	glm::vec2 ellipseCentre = ellipseGlobalPosition + glm::vec2 (ellipseTransform.GetGlobalSize(camera) / 2.0f);
 
 	// get the x radius by doing the centreX - bottomLeftPositionX
 	// E.g.  if centreX is 5 and position is 2 then the difference between 2 and 5 is 3 or 5 - 3 or centreX - positionX
-	float radiusX = ellipseCentre.x - ellipseTransform.position.x;
+	float radiusX = ellipseCentre.x - ellipseGlobalPosition.x;
 
 	// same logic then applies to y axis
-	float radiusY = ellipseCentre.y - ellipseTransform.position.y;
+	float radiusY = ellipseCentre.y - ellipseGlobalPosition.y;
 
 	// convert to radians because trig functinos don't take degrees
 	float zRotationInRadians = glm::radians(ellipseTransform.rotation.z);

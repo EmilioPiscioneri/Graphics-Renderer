@@ -82,7 +82,7 @@ void SpriteRenderer::Draw(std::shared_ptr<OrthoCamera> camera)
 	shaderProgram->SetMatrix4("projection", projection);
 
 	// sey sprite transform
-	shaderProgram->SetMatrix4("modelTransform", spriteTransform.ToMatrix());
+	shaderProgram->SetMatrix4("modelTransform", spriteTransform.ToMatrix(camera));
 	// set color of sprite with alpha channel included
 	shaderProgram->SetVector4f("spriteColor", glm::vec4(color, _alpha));
 

@@ -46,12 +46,19 @@ public:
 	// Only call this when the entity with the highest index has been removed or changed
 	void UpdateHighestZIndex();
 
+	// default is on. If this value is true then will update mainCamera's far plane to match the highest zIndex otherwise entities won't be in rendered space.
+	// When off, scene won't do anything when highestZIndex is changed
+	bool autoUpdateFarPlane = true;
+
+	// Returns the highest zIndex that an entity has, in current scene.
+	// This is NOT an expensive operation as highest zIndex is perpetually tracked
+	unsigned int GetHighestZIndex();
 
 
-	// highest zIndex that an entity has in scene
-	unsigned int highestZIndex = 0;
+	// sets the highest zIndex that an entity has, in current scene.
+	void SetHighestZIndex(unsigned int newHighest);
 
-	// main camera in scene
+	// main camera in scene. This should NEVER be nullptr
 	std::shared_ptr<OrthoCamera> mainCamera;
 
 	// update the scene
@@ -85,10 +92,10 @@ public:
 private:
 	// private variables come after public because they need to access some public values
 	
-	// dynamic array (vector) of pairs that hold each entity in scene (2nd value), that is ordered by their zIndex (1st value). 
-	// This vector is ordered in ascending order
+	// highest zIndex that an entity has, in current scene
+	unsigned int _highestZIndex = 0;
 
-	// -- I use these two below in order to draw the scene back to front so blending can be done properly yknow --
+	// -- I use these two vectors below in order to draw the scene back to front so blending can be done properly yknow --
 
 	// vector of each z index of each transparent entity in scene sorted in ascending order. 
 	// The indexes in this vector correlate to _sortedZIndexes
