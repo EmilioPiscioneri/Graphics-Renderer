@@ -55,7 +55,10 @@ Date -
 * Added
    * autoUpdateFarPlane property to Scene class
    * 2 new transform constructors
-   *  Sticky transforms that fix transforms to camera viewport 
+   * Sticky transforms that fix transforms to camera viewport 
+   * Added 6 different types of tween classes (int, double, uint, vec2, vec3, float) 
+   * Tween manager class
+   * Default tween manager object undeneath scene which has all tweens updated underneath it every frame
 * Changed
    * Highest zIndex in scene now has getters and setters that update the mainCamera's far plane if Scene.autoUpdateFarPlane = true
    * Transforms now have offset and relative properties for position and size. Relative props are relative to camera viewport whle offset are in global(pixel) values
