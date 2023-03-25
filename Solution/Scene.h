@@ -3,10 +3,12 @@
 #include <glfw3.h>
 #include <iostream>
 #include <map>
+#include <vector>
+
 #include "Entity.h"
 #include "OrthoCamera.h"
 #include "EventListener.h"
-#include <vector>
+#include "TweenManager.h"
 
 // Create a new scene to render entities.
 // Note that you must call the UpdateViewport function of this scene whenever the viewport is updated
@@ -61,14 +63,16 @@ public:
 	// main camera in scene. This should NEVER be nullptr
 	std::shared_ptr<OrthoCamera> mainCamera;
 
+	// This tween manager manages all tweens for the current scene
+	TweenManager tweenManager = TweenManager(this);
+
 	// update the scene
 	void Update();
 
 	// run this whenever the viewport of the window changes
 	void UpdateViewport(float width, float height);
 
-	// setup scene 
-	void Initialise();
+	
 
 	// Type of an event
 	// I am using pascal case with underscores because I'm not sure on enum naming conventions and it looks alright to me.
@@ -129,6 +133,9 @@ private:
 
 	// intialises _eventListeners with an empty vector for each different event type
 	void IntialiseListenerMap();
+	
+	// setup scene 
+	void Initialise();
 
 	//unsigned int _maxUInt = 4294967295; // 2^32 - 1
 

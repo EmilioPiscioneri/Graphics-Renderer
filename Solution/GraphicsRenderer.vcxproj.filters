@@ -13,6 +13,15 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="FragmentShaders">
+      <UniqueIdentifier>{15c2536e-e05c-4aa8-806c-7f898dc963d7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="VertexShaders">
+      <UniqueIdentifier>{9be5c4a4-4378-4a8b-994d-7ecb7ed906d3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="TweenClasses">
+      <UniqueIdentifier>{2fc97dc7-ff4a-4492-a43f-e699362493ad}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -57,16 +66,56 @@
     <ClCompile Include="EllipseRenderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="TweenManager.cpp">
+      <Filter>TweenClasses</Filter>
+    </ClCompile>
+    <ClCompile Include="Tween.cpp">
+      <Filter>TweenClasses</Filter>
+    </ClCompile>
+    <ClCompile Include="FloatTween.cpp">
+      <Filter>TweenClasses</Filter>
+    </ClCompile>
+    <ClCompile Include="Vec3Tween.cpp">
+      <Filter>TweenClasses</Filter>
+    </ClCompile>
+    <ClCompile Include="UIntTween.cpp">
+      <Filter>TweenClasses</Filter>
+    </ClCompile>
+    <ClCompile Include="Vec2Tween.cpp">
+      <Filter>TweenClasses</Filter>
+    </ClCompile>
+    <ClCompile Include="IntTween.cpp">
+      <Filter>TweenClasses</Filter>
+    </ClCompile>
+    <ClCompile Include="DoubleTween.cpp">
+      <Filter>TweenClasses</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="FragmentShaders\Default.frag" />
-    <None Include="VertexShaders\Default.vert" />
-    <None Include="VertexShaders\SpriteDefault.vert" />
-    <None Include="FragmentShaders\SpriteDefault.frag" />
-    <None Include="FragmentShaders\RectangleDefault.frag" />
-    <None Include="VertexShaders\RectangleDefault.vert" />
-    <None Include="FragmentShaders\EllipseDefault.frag" />
-    <None Include="VertexShaders\EllipseDefault.vert" />
+    <None Include="FragmentShaders\EllipseDefault.frag">
+      <Filter>FragmentShaders</Filter>
+    </None>
+    <None Include="FragmentShaders\RectangleDefault.frag">
+      <Filter>FragmentShaders</Filter>
+    </None>
+    <None Include="FragmentShaders\SpriteDefault.frag">
+      <Filter>FragmentShaders</Filter>
+    </None>
+    <None Include="VertexShaders\SpriteDefault.vert">
+      <Filter>VertexShaders</Filter>
+    </None>
+    <None Include="VertexShaders\RectangleDefault.vert">
+      <Filter>VertexShaders</Filter>
+    </None>
+    <None Include="VertexShaders\EllipseDefault.vert">
+      <Filter>VertexShaders</Filter>
+    </None>
+    <None Include="VertexShaders\Default.vert">
+      <Filter>VertexShaders</Filter>
+    </None>
+    <None Include="FragmentShaders\Default.frag">
+      <Filter>FragmentShaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ShaderProgram.h">
@@ -110,6 +159,30 @@
     </ClInclude>
     <ClInclude Include="EllipseRenderer.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TweenManager.h">
+      <Filter>TweenClasses</Filter>
+    </ClInclude>
+    <ClInclude Include="Tween.h">
+      <Filter>TweenClasses</Filter>
+    </ClInclude>
+    <ClInclude Include="FloatTween.h">
+      <Filter>TweenClasses</Filter>
+    </ClInclude>
+    <ClInclude Include="Vec3Tween.h">
+      <Filter>TweenClasses</Filter>
+    </ClInclude>
+    <ClInclude Include="UIntTween.h">
+      <Filter>TweenClasses</Filter>
+    </ClInclude>
+    <ClInclude Include="Vec2Tween.h">
+      <Filter>TweenClasses</Filter>
+    </ClInclude>
+    <ClInclude Include="IntTween.h">
+      <Filter>TweenClasses</Filter>
+    </ClInclude>
+    <ClInclude Include="DoubleTween.h">
+      <Filter>TweenClasses</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

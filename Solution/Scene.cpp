@@ -226,8 +226,8 @@ void Scene::Update()
 	processKeyboardInputs();
 	// process any pending events that have been received and then returns immediately
 	glfwPollEvents();
-
-
+	// update tweens
+	tweenManager.UpdateAll();
 
 	// first loop through each opaque entity
 	for (std::pair<std::string, std::shared_ptr<Entity>> entityIterator : _opaqueEntities)

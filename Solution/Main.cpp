@@ -13,6 +13,10 @@
 #include "ResourceManager.h"
 #include "Scene.h"
 #include "EllipseRenderer.h"
+#include "FloatTween.h"
+#include "Vec2Tween.h"
+#include "Vec3Tween.h"
+
 
 
 /* -- Notes/explanation of design choices --
@@ -76,6 +80,9 @@
 * If you turn autoUpdateFarPlane off for a scene, it will only render any entities where (scene.highestZIndex - entity.zIndex) <  mainCamera.farPlane
 * 
 * If you're using a default transform constructor beware that the default values are (0,0) or (0,0,0) so you have to actually set them to see a value on the screen
+* 
+* Due to c++ not having actual support for static classes like c# and it just seeming better to use a normal class, I just decided to make the TweenManager
+	its own normal class.
 * 
 * --- Known bugs/issues ---
 * I believe that camera rotation doesn't rotate that nicely. I think it rotates the entire scene around (0,0) which produces a weird effect.
@@ -282,6 +289,14 @@ int main() {
 	//std::cout << "Created a listener with id " << listenerId << std::endl;
 
 	
+	// testing tween funcitonality 
+	
+	std::shared_ptr<FloatTween> rotationZTween = std::make_shared<FloatTween>(&ellipse->transform.rotation.z, 0.0f, 360.0f, 2.5f);
+	scene->tweenManager.AddTween(rotationZTween, false);
+	rotationZTween->Start();
+
+	std::shared_ptr<Vec2Tween> tweenPos = std::make_shared<Vec2Tween>(&ellipse->transform.offsetPosition, glm::vec2(0.0f,0.0f), glm::vec2(400.0f, -400.0f), 2.5f);
+	scene->tweenManager.AddTween(tweenPos);
 
 
 	// set a breakpoint here if you need to check variables before they go into main loop
@@ -314,7 +329,7 @@ int main() {
 			scene->mainCamera->position.x += camSpeed * deltaTime;
 
 		// rotate ellipse (revolutions are every 2*pi seconds)
-		ellipse->transform.rotation.z = glm::degrees((float)glfwGetTime());
+		//ellipse->transform.rotation.z = glm::degrees((float)glfwGetTime());
 		scene->Update();
 		
 		//float timeSinceStart = (float)glfwGetTime(); // time since start of window
