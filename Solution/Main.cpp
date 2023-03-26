@@ -13,6 +13,7 @@
 #include "ResourceManager.h"
 #include "Scene.h"
 #include "EllipseRenderer.h"
+#include "LineRenderer.h"
 #include "FloatTween.h"
 #include "Vec2Tween.h"
 #include "Vec3Tween.h"
@@ -83,6 +84,8 @@
 * 
 * Due to c++ not having actual support for static classes like c# and it just seeming better to use a normal class, I just decided to make the TweenManager
 	its own normal class.
+
+* ZIndex is under entity.transform because zIndex is related to the positioning of an entity which is a transformation
 * 
 * --- Known bugs/issues ---
 * I believe that camera rotation doesn't rotate that nicely. I think it rotates the entire scene around (0,0) which produces a weird effect.
@@ -202,7 +205,7 @@ int main() {
 	rectRenderer->SetAlpha(0.9f);
 
 	// add to entity
-	rect->AddComponent(Entity::ComponentType::RectangleRenderer, rectRenderer);
+	rect->AddComponent(Entity::RectangleRenderer, rectRenderer);
 
 	scene->AddEntity("rect", rect);
 
@@ -224,7 +227,7 @@ int main() {
 	rectRenderer2->SetAlpha(1.0f);
 
 	// add to entity
-	rect2->AddComponent(Entity::ComponentType::RectangleRenderer, rectRenderer2);
+	rect2->AddComponent(Entity::RectangleRenderer, rectRenderer2);
 
 	scene->AddEntity("rect2", rect2);
 
@@ -247,7 +250,7 @@ int main() {
 	spriteRenderer->SetAlpha(0.7f);
 
 	// add to entity
-	sprite->AddComponent(Entity::ComponentType::SpriteRenderer, spriteRenderer);
+	sprite->AddComponent(Entity::SpriteRenderer, spriteRenderer);
 	//rect.AddComponent(Entity::ComponentType::SpriteRenderer, std::make_shared<SpriteRenderer>());
 
 	scene->AddEntity("sprite", sprite);
@@ -280,9 +283,33 @@ int main() {
 	ellipseRenderer->SetAlpha(0.6f);
 
 	// add to entity
-	ellipse->AddComponent(Entity::ComponentType::EllipseRenderer, ellipseRenderer);
+	ellipse->AddComponent(Entity::EllipseRenderer, ellipseRenderer);
 
 	scene->AddEntity("ellipse", ellipse);
+
+	// Create a line entity
+
+	std::shared_ptr<Entity> line = std::make_shared<Entity>();
+	// actually make it visible
+	line->transform.offsetSize = glm::vec3(1.0f, 1.0f, 0.0f);
+
+	glm::vec2 point1 = glm::vec2(234.26f, -132.53f);
+	glm::vec2 point2 = glm::vec2(400.0f, 400.0f);
+	float lineThickness = 2.0f;
+
+	std::shared_ptr<LineRenderer> lineRenderer = std::make_shared<LineRenderer>(point1, point2, lineThickness);
+
+	//lineRenderer->color = glm::vec3(1.0f,0.0f,0.0f); // red
+	//lineRenderer->color = glm::vec3(0.0f, 1.0f, 0.0f); // green
+	//lineRenderer->color = glm::vec3(0.0f, 0.0f, 1.0f); // blue
+
+	line->transform.SetZIndex(5);
+	//lineRenderer->SetAlpha(0.9f);
+
+	// add to entity
+	line->AddComponent(Entity::LineRenderer, lineRenderer);
+
+	scene->AddEntity("line", line);
 
 	//unsigned int listenerId = scene->AddListener(Scene::EventType::Frame_End,EventListener(func));
 
@@ -297,6 +324,11 @@ int main() {
 
 	std::shared_ptr<Vec2Tween> tweenPos = std::make_shared<Vec2Tween>(&ellipse->transform.offsetPosition, glm::vec2(0.0f,0.0f), glm::vec2(400.0f, -400.0f), 2.5f);
 	scene->tweenManager.AddTween(tweenPos);
+
+	//std::shared_ptr<Vec2Tween> linePos1Tween = std::make_shared<Vec2Tween>(&line->.offsetPosition, glm::vec2(0.0f, 0.0f), glm::vec2(400.0f, -400.0f), 2.5f);
+	//scene->tweenManager.AddTween(linePos1Tween);
+
+	
 
 
 	// set a breakpoint here if you need to check variables before they go into main loop

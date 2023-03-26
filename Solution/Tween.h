@@ -2,7 +2,7 @@
 #include <iostream>
 
 
-// This is a base class of objects that interpolate from one value to another
+// This is a base class of objects that interpolate from one value to another.
 class Tween
 {
 public:
@@ -40,6 +40,8 @@ public:
 	virtual void Update(double deltaTime) = 0;
 protected:
 	
+	// whether or not to use getter and setter callbacks for getting and setting values 
+	bool UseGettersAndSetters = false;
 
 	// the current state of this tween
 	State _state = InActive;

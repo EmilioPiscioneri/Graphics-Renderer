@@ -10,8 +10,8 @@ EllipseRenderer::EllipseRenderer(glm::vec3 color, ShaderProgram* program)
 {
 	// if the program wasn't specified 
 	if (program == nullptr)
-		// use default path, add time to end to avoid lots of recursion when there are many defaultSpritePrograms
-		this->shaderProgram = ResourceManager::LoadShaderProgram("defaultSpriteProgram" + std::to_string(glfwGetTime()), defaultVertPath, defaultFragPath);
+		// use default path, add time to end to avoid lots of recursion when there are many default programs
+		this->shaderProgram = ResourceManager::LoadShaderProgram("defaultEllipseProgram" + std::to_string(glfwGetTime()), defaultVertPath, defaultFragPath);
 	else // else use given one
 		this->shaderProgram = program;
 
@@ -113,11 +113,11 @@ void EllipseRenderer::InitRenderData()
 {
 	// normalised vertics from -1 to 1 on x and y axis. These start as 1s but the size transform changes them
 	float vertices[] = {
-		// positions        // texture coords
-		1.0f,   1.0f, 0.0f,   1.0f, 1.0f, // top right
-		1.0f,  -1.0f, 0.0f,   1.0f, 0.0f, // bottom right
-		-1.0f, -1.0f, 0.0f,   0.0f, 0.0f, // bottom left
-		-1.0f,  1.0f, 0.0f,   0.0f, 1.0f, // top left 
+		// positions       
+		1.0f,   1.0f, 0.0f, // top-right
+		1.0f,  -1.0f, 0.0f, // bottom-right
+		-1.0f, -1.0f, 0.0f, // bottom left
+		-1.0f,  1.0f, 0.0f  // top left
 	};
 	// define what order of vertices to draw rectangle
 	unsigned int indices[] = {  // note this is 0 based index
@@ -145,14 +145,9 @@ void EllipseRenderer::InitRenderData()
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);// bind indicies to element buffer
 
 	// set vertex attribute position pointer at location 0, with 3 values, of type float, don't normalise data, stride is 5 values, offser of 0 bytes
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 	// enable the created attribute which is at location 0
 	glEnableVertexAttribArray(0);
-
-	// set vertex attribute texture coords pointer at location 1, with 2 values, of type float, don't normalise data, stride is 5 float values, offset of 3 floats (3 * sizeof (float) bytes)
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-	// enable the created attribute which is at location 0
-	glEnableVertexAttribArray(1);
 
 	// unbind
 	glBindBuffer(GL_ARRAY_BUFFER, 0);

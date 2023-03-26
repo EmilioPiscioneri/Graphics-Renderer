@@ -22,6 +22,9 @@
     <Filter Include="TweenClasses">
       <UniqueIdentifier>{2fc97dc7-ff4a-4492-a43f-e699362493ad}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Renderer Classes">
+      <UniqueIdentifier>{e01f5ac9-472d-4d6b-82b9-f90c69bff2e4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -45,9 +48,6 @@
     <ClCompile Include="Texture2D.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SpriteRenderer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="OrthoCamera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -58,12 +58,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="glad.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="RectangleRenderer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="EllipseRenderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="TweenManager.cpp">
@@ -89,6 +83,18 @@
     </ClCompile>
     <ClCompile Include="DoubleTween.cpp">
       <Filter>TweenClasses</Filter>
+    </ClCompile>
+    <ClCompile Include="SpriteRenderer.cpp">
+      <Filter>Renderer Classes</Filter>
+    </ClCompile>
+    <ClCompile Include="RectangleRenderer.cpp">
+      <Filter>Renderer Classes</Filter>
+    </ClCompile>
+    <ClCompile Include="EllipseRenderer.cpp">
+      <Filter>Renderer Classes</Filter>
+    </ClCompile>
+    <ClCompile Include="LineRenderer.cpp">
+      <Filter>Renderer Classes</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -116,6 +122,12 @@
     <None Include="FragmentShaders\Default.frag">
       <Filter>FragmentShaders</Filter>
     </None>
+    <None Include="FragmentShaders\LineDefault.frag">
+      <Filter>FragmentShaders</Filter>
+    </None>
+    <None Include="VertexShaders\LineDefault.vert">
+      <Filter>VertexShaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ShaderProgram.h">
@@ -139,9 +151,6 @@
     <ClInclude Include="Texture2D.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SpriteRenderer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Camera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -152,12 +161,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="EventListener.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="RectangleRenderer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="EllipseRenderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="TweenManager.h">
@@ -183,6 +186,18 @@
     </ClInclude>
     <ClInclude Include="DoubleTween.h">
       <Filter>TweenClasses</Filter>
+    </ClInclude>
+    <ClInclude Include="RectangleRenderer.h">
+      <Filter>Renderer Classes</Filter>
+    </ClInclude>
+    <ClInclude Include="EllipseRenderer.h">
+      <Filter>Renderer Classes</Filter>
+    </ClInclude>
+    <ClInclude Include="SpriteRenderer.h">
+      <Filter>Renderer Classes</Filter>
+    </ClInclude>
+    <ClInclude Include="LineRenderer.h">
+      <Filter>Renderer Classes</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

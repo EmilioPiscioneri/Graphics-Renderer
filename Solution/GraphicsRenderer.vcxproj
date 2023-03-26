@@ -149,6 +149,7 @@
     <ClCompile Include="FloatTween.cpp" />
     <ClCompile Include="glad.c" />
     <ClCompile Include="IntTween.cpp" />
+    <ClCompile Include="LineRenderer.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="OrthoCamera.cpp" />
     <ClCompile Include="RectangleRenderer.cpp" />
@@ -166,11 +167,13 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="FragmentShaders\Default.frag" />
+    <None Include="FragmentShaders\LineDefault.frag" />
     <None Include="FragmentShaders\RectangleDefault.frag" />
     <None Include="VertexShaders\EllipseDefault.vert" />
     <None Include="FragmentShaders\SpriteDefault.frag" />
     <None Include="VertexShaders\Default.vert" />
     <None Include="FragmentShaders\EllipseDefault.frag" />
+    <None Include="VertexShaders\LineDefault.vert" />
     <None Include="VertexShaders\RectangleDefault.vert" />
     <None Include="VertexShaders\SpriteDefault.vert" />
   </ItemGroup>
@@ -184,6 +187,7 @@
     <ClInclude Include="EventListener.h" />
     <ClInclude Include="FloatTween.h" />
     <ClInclude Include="IntTween.h" />
+    <ClInclude Include="LineRenderer.h" />
     <ClInclude Include="OrthoCamera.h" />
     <ClInclude Include="RectangleRenderer.h" />
     <ClInclude Include="ResourceManager.h" />

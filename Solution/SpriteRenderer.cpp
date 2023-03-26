@@ -20,7 +20,7 @@ SpriteRenderer::SpriteRenderer(Texture2D* texture, glm::vec3 color, ShaderProgra
 	// set texture
 	this->texture = texture;
 	// if the image texture uses alpha channel then set component property to use transparency
-	if (texture->imageFormat = GL_RGBA)
+	if (texture->imageFormat == GL_RGBA)
 		this->hasTransprency = true;
 	// set colour
 	this->color = color;
