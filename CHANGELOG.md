@@ -51,7 +51,7 @@ Date - 23/3/23 11:30 pm
  * Other notes
    * I hate english (as a subject)
 ## V 0.1.4 Tweens, sticky transform and line renderer
-Date - 
+Date - 26/3/23 3:30 pm
 * Added
    * autoUpdateFarPlane property to Scene class
    * 2 new transform constructors
