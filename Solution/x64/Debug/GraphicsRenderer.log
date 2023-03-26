@@ -1,4 +1,4 @@
 ﻿  Main.cpp
 C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.32.31326\include\memory(3423,56): warning C4244: 'argument': conversion from 'const int' to 'float', possible loss of data
-X:\OneDrive - De La Salle College\Subjects\Coding projects\OpenGL projects\Graphics Renderer\Solution\Main.cpp(158): message : see reference to function template instantiation 'std::unique_ptr<Scene,std::default_delete<Scene>> std::make_unique<Scene,GLFWwindow*&,const int&,const int&,0>(GLFWwindow *&,const int &,const int &)' being compiled
+X:\OneDrive - De La Salle College\Subjects\Coding projects\OpenGL projects\Graphics Renderer\Solution\Main.cpp(163): message : see reference to function template instantiation 'std::unique_ptr<Scene,std::default_delete<Scene>> std::make_unique<Scene,GLFWwindow*&,const int&,const int&,0>(GLFWwindow *&,const int &,const int &)' being compiled
   GraphicsRenderer.vcxproj -> X:\OneDrive - De La Salle College\Subjects\Coding projects\OpenGL projects\Graphics Renderer\Solution\x64\Debug\Build\GraphicsRenderer.exe

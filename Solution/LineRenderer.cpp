@@ -229,6 +229,8 @@ std::array<float, 12> LineRenderer::CalculateLineVertices()
 	* Also, I do - 1 because normally I would do * 2 - 1 as values are from -1 to 1 for glsl. However, in this case we do thickness/2 so the 
 	* times by 2 and divide by 2 cancel to get just the - 1.
 	* 
+	* You then need to do a * 2 because of dealing with normal to global coordinates stuff. Just look at transform.cpp for more info if curious
+	* 
 	* Also I write normalise not normalize cos I'm australian not american
 	*/
 
@@ -236,14 +238,14 @@ std::array<float, 12> LineRenderer::CalculateLineVertices()
 	glm::vec2 normalisedDifferenceVector = glm::normalize(_point2 - _point1);
 
 	// the point to the left of point 1. (90 degrees anti-clockwise)
-	glm::vec2 leftPoint1 = glm::vec2(-(normalisedDifferenceVector.y), normalisedDifferenceVector.x) * _thickness + _point1 - 1.0f;
+	glm::vec2 leftPoint1 = (glm::vec2(-(normalisedDifferenceVector.y), normalisedDifferenceVector.x) * _thickness + _point1 - 1.0f) * 2.0f;
 	// the point to the right of point 1. (90 degrees clockwise)
-	glm::vec2 rightPoint1 = glm::vec2(normalisedDifferenceVector.y, -(normalisedDifferenceVector.x))* _thickness + _point1 - 1.0f;
+	glm::vec2 rightPoint1 = (glm::vec2(normalisedDifferenceVector.y, -(normalisedDifferenceVector.x))* _thickness + _point1 - 1.0f) * 2.0f;
 
 	// the point to the left of point 2. (90 degrees anti-clockwise)
-	glm::vec2 leftPoint2 = glm::vec2(-(normalisedDifferenceVector.y), normalisedDifferenceVector.x)* _thickness + _point2 - 1.0f;
+	glm::vec2 leftPoint2 = (glm::vec2(-(normalisedDifferenceVector.y), normalisedDifferenceVector.x)* _thickness + _point2 - 1.0f) * 2.0f;
 	// the point to the right of point 2. (90 degrees clockwise)
-	glm::vec2 rightPoint2 = glm::vec2(normalisedDifferenceVector.y, -(normalisedDifferenceVector.x))* _thickness + _point2 - 1.0f;
+	glm::vec2 rightPoint2 = (glm::vec2(normalisedDifferenceVector.y, -(normalisedDifferenceVector.x))* _thickness + _point2 - 1.0f) * 2.0f;
 
 	std::array<float, 12> vertices = {
 		leftPoint1.x, leftPoint1.y, 0.0f,

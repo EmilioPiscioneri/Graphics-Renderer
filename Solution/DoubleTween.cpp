@@ -1,14 +1,28 @@
 #include "DoubleTween.h"
 #include <exception>
 
-
-DoubleTween::DoubleTween(double* valueToTween, double startValue, double targetValue, double tweenDuration, bool deleteOnEnd, Method method)
+DoubleTween::DoubleTween(double* valueToTween, double startValue, double targetValue, double tweenDuration, double tweenDelay, bool deleteOnEnd, Method method)
 {
+	useSetter = false;
 	_targetValue = targetValue;
-	_tweenDuration = tweenDuration;
+	_duration = tweenDuration;
+	_delay = tweenDelay;
 	_startValue = startValue;
 	_method = method;
 	_valueToTween = valueToTween;
+	this->deleteOnEnd = deleteOnEnd;
+}
+
+DoubleTween::DoubleTween(SetterCallback setterCallback, double startValue, double targetValue, double tweenDuration, double tweenDelay, bool deleteOnEnd, Method method)
+{
+	useSetter = true;
+	_valueToTween = nullptr;
+	_setterCallback = setterCallback;
+	_duration = tweenDuration;
+	_delay = tweenDelay;
+	_targetValue = targetValue;
+	_startValue = startValue;
+	_method = method;
 	this->deleteOnEnd = deleteOnEnd;
 }
 
@@ -19,7 +33,7 @@ void DoubleTween::Update(double deltaTime)
 		return;
 
 	// error check
-	if (_valueToTween == nullptr)
+	if (!useSetter && _valueToTween == nullptr)
 	{
 		Stop();
 		throw std::exception("Tried to tween a value that has been set to nullptr");
@@ -29,25 +43,42 @@ void DoubleTween::Update(double deltaTime)
 	double differenceSinceLastUpdate = deltaTime;
 
 	// if we've reached the end
-	if (_progressedSeconds + deltaTime >= _tweenDuration)
+	if (_progressedSeconds + deltaTime >= _duration + _delay)
 	{
 		// stop tween from continuing in future
 		Stop();
 		// get the difference from progressed so far to target to account for difference to reach end
-		differenceSinceLastUpdate = _tweenDuration - _progressedSeconds;
+		differenceSinceLastUpdate = (_duration + _delay) - _progressedSeconds;
 	}
 
 	// add progressed time
 	_progressedSeconds += differenceSinceLastUpdate;
 
-	// do the start value plus difference from the start to end * percentage of how much of the tween has been completed
-	*_valueToTween = _startValue + (_targetValue - _startValue) * (_progressedSeconds / _tweenDuration);
+	// if the amount of time passed has surpassed the delay time
+	if (_progressedSeconds > _delay) {
+		// how much time has passed since the actual start of the tween
+		double timeSinceStart = _progressedSeconds - _delay;
+
+		// do the start value plus difference from the start to end * percentage of how much of the tween has been completed
+		double newValue = _startValue + (_targetValue - _startValue) * (timeSinceStart / _duration);
+
+		// if not using setters
+		if (!useSetter)
+			*_valueToTween = newValue;
+		else  // else, use setter
+			_setterCallback(newValue);
+	}
 
 }
 
 void DoubleTween::Start()
 {
-	*_valueToTween = _startValue;
+	// if not using setter
+	if (!useSetter)
+		*_valueToTween = _startValue;
+	else
+		_setterCallback(_startValue);
+
 	_progressedSeconds = 0;
 	_state = State::Active;
 }

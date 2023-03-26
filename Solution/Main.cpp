@@ -87,6 +87,11 @@
 
 * ZIndex is under entity.transform because zIndex is related to the positioning of an entity which is a transformation
 * 
+* I used std::function for tween setters because it allows you to pass in setters for object methods. This is just something that is really useful with the
+	architecture of my current codebase and allows custom implementations of tweened values
+* 
+* Tweens have really big constructors because the initial values should only be set once. This is probably a bad practice but hey it's not awful in my opinion
+* 
 * --- Known bugs/issues ---
 * I believe that camera rotation doesn't rotate that nicely. I think it rotates the entire scene around (0,0) which produces a weird effect.
 	A fix for this would involve moving the origin of rotation to be the axis of the camera position i think
@@ -295,7 +300,7 @@ int main() {
 
 	glm::vec2 point1 = glm::vec2(234.26f, -132.53f);
 	glm::vec2 point2 = glm::vec2(400.0f, 400.0f);
-	float lineThickness = 2.0f;
+	float lineThickness = 1.5f;
 
 	std::shared_ptr<LineRenderer> lineRenderer = std::make_shared<LineRenderer>(point1, point2, lineThickness);
 
@@ -325,8 +330,17 @@ int main() {
 	std::shared_ptr<Vec2Tween> tweenPos = std::make_shared<Vec2Tween>(&ellipse->transform.offsetPosition, glm::vec2(0.0f,0.0f), glm::vec2(400.0f, -400.0f), 2.5f);
 	scene->tweenManager.AddTween(tweenPos);
 
-	//std::shared_ptr<Vec2Tween> linePos1Tween = std::make_shared<Vec2Tween>(&line->.offsetPosition, glm::vec2(0.0f, 0.0f), glm::vec2(400.0f, -400.0f), 2.5f);
-	//scene->tweenManager.AddTween(linePos1Tween);
+	// callback to point1 setter
+	Vec2Tween::SetterCallback p1setter = std::bind(&LineRenderer::SetPoint1,lineRenderer, std::placeholders::_1);
+
+	std::shared_ptr<Vec2Tween> linePos1Tween = std::make_shared<Vec2Tween>(p1setter, point1, glm::vec2(400.0f, 700.0f), 2.5f);
+	scene->tweenManager.AddTween(linePos1Tween);
+
+	// callback to point2 setter
+	Vec2Tween::SetterCallback p2setter = std::bind(&LineRenderer::SetPoint2, lineRenderer, std::placeholders::_1);
+
+	std::shared_ptr<Vec2Tween> linePos2Tween = std::make_shared<Vec2Tween>(p2setter, point2, glm::vec2(700.0f, 700.0f), 1.3f, 2.5f);
+	scene->tweenManager.AddTween(linePos2Tween);
 
 	
 

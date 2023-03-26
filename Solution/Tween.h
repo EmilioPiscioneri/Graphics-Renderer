@@ -40,8 +40,8 @@ public:
 	virtual void Update(double deltaTime) = 0;
 protected:
 	
-	// whether or not to use getter and setter callbacks for getting and setting values 
-	bool UseGettersAndSetters = false;
+	// whether or not to use setter callback for setting values 
+	bool useSetter = false;
 
 	// the current state of this tween
 	State _state = InActive;
@@ -49,9 +49,12 @@ protected:
 	// The interpolation method of the current tween
 	Method _method = Linear;
 
-	// How long the tween should run for in seconds
-	double _tweenDuration = 0;
+	// How long the tween should run for in seconds, after the delay
+	double _duration = 0;
 
-	// How many seconds have passed since tween was started
+	// How long to wait in seconds before a tween should run
+	double _delay = 0;
+
+	// How many seconds have passed since tween was started (including delay)
 	double _progressedSeconds = 0;
 };
