@@ -141,11 +141,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="DoubleTween.cpp" />
     <ClCompile Include="EllipseRenderer.cpp" />
     <ClCompile Include="Entity.cpp" />
     <ClCompile Include="EventInfo.cpp" />
     <ClCompile Include="EventListener.cpp" />
+    <ClCompile Include="FloatTween.cpp" />
     <ClCompile Include="glad.c" />
+    <ClCompile Include="IntTween.cpp" />
+    <ClCompile Include="LineRenderer.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="OrthoCamera.cpp" />
     <ClCompile Include="RectangleRenderer.cpp" />
@@ -155,24 +159,35 @@
     <ClCompile Include="SpriteRenderer.cpp" />
     <ClCompile Include="Texture2D.cpp" />
     <ClCompile Include="Transform.cpp" />
+    <ClCompile Include="Tween.cpp" />
+    <ClCompile Include="TweenManager.cpp" />
+    <ClCompile Include="UIntTween.cpp" />
+    <ClCompile Include="Vec2Tween.cpp" />
+    <ClCompile Include="Vec3Tween.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="FragmentShaders\Default.frag" />
+    <None Include="FragmentShaders\LineDefault.frag" />
     <None Include="FragmentShaders\RectangleDefault.frag" />
     <None Include="VertexShaders\EllipseDefault.vert" />
     <None Include="FragmentShaders\SpriteDefault.frag" />
     <None Include="VertexShaders\Default.vert" />
     <None Include="FragmentShaders\EllipseDefault.frag" />
+    <None Include="VertexShaders\LineDefault.vert" />
     <None Include="VertexShaders\RectangleDefault.vert" />
     <None Include="VertexShaders\SpriteDefault.vert" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Component.h" />
+    <ClInclude Include="DoubleTween.h" />
     <ClInclude Include="EllipseRenderer.h" />
     <ClInclude Include="Entity.h" />
     <ClInclude Include="EventInfo.h" />
     <ClInclude Include="EventListener.h" />
+    <ClInclude Include="FloatTween.h" />
+    <ClInclude Include="IntTween.h" />
+    <ClInclude Include="LineRenderer.h" />
     <ClInclude Include="OrthoCamera.h" />
     <ClInclude Include="RectangleRenderer.h" />
     <ClInclude Include="ResourceManager.h" />
@@ -181,6 +196,11 @@
     <ClInclude Include="SpriteRenderer.h" />
     <ClInclude Include="Texture2D.h" />
     <ClInclude Include="Transform.h" />
+    <ClInclude Include="Tween.h" />
+    <ClInclude Include="TweenManager.h" />
+    <ClInclude Include="UIntTween.h" />
+    <ClInclude Include="Vec2Tween.h" />
+    <ClInclude Include="Vec3Tween.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Textures\ZazaWolf.jpg" />

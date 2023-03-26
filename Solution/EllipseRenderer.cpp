@@ -10,8 +10,8 @@ EllipseRenderer::EllipseRenderer(glm::vec3 color, ShaderProgram* program)
 {
 	// if the program wasn't specified 
 	if (program == nullptr)
-		// use default path, add time to end to avoid lots of recursion when there are many defaultSpritePrograms
-		this->shaderProgram = ResourceManager::LoadShaderProgram("defaultSpriteProgram" + std::to_string(glfwGetTime()), defaultVertPath, defaultFragPath);
+		// use default path, add time to end to avoid lots of recursion when there are many default programs
+		this->shaderProgram = ResourceManager::LoadShaderProgram("defaultEllipseProgram" + std::to_string(glfwGetTime()), defaultVertPath, defaultFragPath);
 	else // else use given one
 		this->shaderProgram = program;
 
@@ -65,20 +65,23 @@ void EllipseRenderer::Draw(std::shared_ptr<OrthoCamera> camera)
 	shaderProgram->SetMatrix4("projection", projection);
 
 	// sey sprite transform
-	shaderProgram->SetMatrix4("modelTransform", ellipseTransform.ToMatrix());
+	shaderProgram->SetMatrix4("modelTransform", ellipseTransform.ToMatrix(camera));
 	// set color of ellipse with alpha channel included
 	shaderProgram->SetVector4f("ellipseColor", glm::vec4(color, _alpha));
 	// --- Calculate different values that the fragment shader uses to calculate whether a pixel of the rect is in ellipse bounds ---
 
+	// get the global pos of the current ellipse as it will be its actual position in global coords. We want this value relative to camera so do - camera position
+	glm::vec2 ellipseGlobalPosition = ellipseTransform.GetGlobalPosition(camera) - camera->position;
+
 	// get the centre (h,k) of the current ellipse in pixel/global coords. The position of an ellipse is at the bottom-left so add half width and height to get actual centre
-	glm::vec2 ellipseCentre = ellipseTransform.position + glm::vec2 (ellipseTransform.size / 2.0f);
+	glm::vec2 ellipseCentre = ellipseGlobalPosition + glm::vec2 (ellipseTransform.GetGlobalSize(camera) / 2.0f);
 
 	// get the x radius by doing the centreX - bottomLeftPositionX
 	// E.g.  if centreX is 5 and position is 2 then the difference between 2 and 5 is 3 or 5 - 3 or centreX - positionX
-	float radiusX = ellipseCentre.x - ellipseTransform.position.x;
+	float radiusX = ellipseCentre.x - ellipseGlobalPosition.x;
 
 	// same logic then applies to y axis
-	float radiusY = ellipseCentre.y - ellipseTransform.position.y;
+	float radiusY = ellipseCentre.y - ellipseGlobalPosition.y;
 
 	// convert to radians because trig functinos don't take degrees
 	float zRotationInRadians = glm::radians(ellipseTransform.rotation.z);
@@ -110,11 +113,11 @@ void EllipseRenderer::InitRenderData()
 {
 	// normalised vertics from -1 to 1 on x and y axis. These start as 1s but the size transform changes them
 	float vertices[] = {
-		// positions        // texture coords
-		1.0f,   1.0f, 0.0f,   1.0f, 1.0f, // top right
-		1.0f,  -1.0f, 0.0f,   1.0f, 0.0f, // bottom right
-		-1.0f, -1.0f, 0.0f,   0.0f, 0.0f, // bottom left
-		-1.0f,  1.0f, 0.0f,   0.0f, 1.0f, // top left 
+		// positions       
+		1.0f,   1.0f, 0.0f, // top-right
+		1.0f,  -1.0f, 0.0f, // bottom-right
+		-1.0f, -1.0f, 0.0f, // bottom left
+		-1.0f,  1.0f, 0.0f  // top left
 	};
 	// define what order of vertices to draw rectangle
 	unsigned int indices[] = {  // note this is 0 based index
@@ -142,14 +145,9 @@ void EllipseRenderer::InitRenderData()
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);// bind indicies to element buffer
 
 	// set vertex attribute position pointer at location 0, with 3 values, of type float, don't normalise data, stride is 5 values, offser of 0 bytes
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 	// enable the created attribute which is at location 0
 	glEnableVertexAttribArray(0);
-
-	// set vertex attribute texture coords pointer at location 1, with 2 values, of type float, don't normalise data, stride is 5 float values, offset of 3 floats (3 * sizeof (float) bytes)
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-	// enable the created attribute which is at location 0
-	glEnableVertexAttribArray(1);
 
 	// unbind
 	glBindBuffer(GL_ARRAY_BUFFER, 0);

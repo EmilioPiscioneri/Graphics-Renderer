@@ -1,12 +1,18 @@
 #pragma once
-#include "Transform.h"
+#include <glm/gtc/matrix_transform.hpp>
 
 class Camera
 {
 public:
-	// transform of the camera's view. The size component acts as a scaling of viewport (1 is normal) instead of a definitive size.
-	// Camera's start with a transform of size vec3(1,1,1) unlike most other transforms
-	Transform viewTransform = Transform(glm::vec2(0.0f), glm::vec3(1.0f));
+	// scalar size of the camera
+	glm::vec2 scalarSize = glm::vec2(1.0f);
+	
+	// the position of the current camera
+	glm::vec2 position = glm::vec2(0.0f);
+
+	// rotation of camera about each axis in degrees E.g. (0,45,90) rotates 45 degrees around the y axis and then 90 degrees around the z axis
+	glm::vec3 rotation = glm::vec3(0.0f);
+
 	// get the view matrix for the current camera with all transforms applied
 	virtual glm::mat4 GetViewMatrix() = 0;
 	// get the projection matrix for the current camera

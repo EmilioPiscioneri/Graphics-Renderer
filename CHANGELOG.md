@@ -50,3 +50,16 @@ Date - 23/3/23 11:30 pm
    * Oh yeah, also implemented zIndex property for entities. It is under an entity's transform.
  * Other notes
    * I hate english (as a subject)
+## V 0.1.4 Tweens, sticky transform and line renderer
+Date - 26/3/23 3:30 pm
+* Added
+   * autoUpdateFarPlane property to Scene class
+   * 2 new transform constructors
+   * Sticky transforms that fix transforms to camera viewport 
+   * Added 6 different types of tween classes (int, double, uint, vec2, vec3, float) 
+   * Tween manager class
+   * Default tween manager object undeneath scene which has all tweens updated underneath it every frame
+* Changed
+   * Highest zIndex in scene now has getters and setters that update the mainCamera's far plane if Scene.autoUpdateFarPlane = true
+   * Transforms now have offset and relative properties for position and size. Relative props are relative to camera viewport whle offset are in global(pixel) values
+   * Defaulted transform offsetSize to be (0,0,0) in default constructor - may be annoying where you create something that doesn't appear, but is confusing if you're only using relative values and the original constructor which had a default offset size of (100,100,0).

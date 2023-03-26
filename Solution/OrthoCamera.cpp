@@ -1,6 +1,5 @@
 #include "OrthoCamera.h"
-#include <glm/gtc/matrix_transform.hpp>
-
+#include "Transform.h"
 OrthoCamera::OrthoCamera(float width, float height, float nearPlane, float farPlane) {
 	// just assign variables
 	this->width = width;
@@ -11,15 +10,12 @@ OrthoCamera::OrthoCamera(float width, float height, float nearPlane, float farPl
 
 glm::mat4 OrthoCamera::GetViewMatrix()
 {
-	// In the same way that we apply a 2x factor to the width and height of projection matrix
-	// We need to apply a 2x factor to the x and y position of the matrix transform
-	Transform tempTransform = viewTransform; // copy current transform
-	//tempTransform.position.x *= 2.0f; // apply 2x
-	//tempTransform.position.y *= 2.0f; // apply 2x
-	// lastly, you need to inverse the view. The view matrix moves the entire scene however if you inverse that it moves only the camera
+	// get the view matrix using camera's properties
+	glm::mat4 viewMatrix = Transform::ValuesToMatrix(position, glm::vec3(scalarSize, 1.0f), rotation); // copy current transform
+	// you need to inverse the view. The view matrix moves the entire scene however if you inverse that it moves only the camera
 	// E.g. if you move the scene by 10 pixel up and to the right. It looks as if the camera has moved 10 pixels down and to the left
 	// So you inverse this to make to get the desired effect. This also applies to rotations and scale 
-	return glm::inverse(tempTransform.ToMatrix());
+	return glm::inverse(viewMatrix);
 }
 
 glm::mat4 OrthoCamera::GetProjectionMatrix()

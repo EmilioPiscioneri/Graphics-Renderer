@@ -1,29 +1,4 @@
-﻿  EllipseRenderer.cpp
-  Entity.cpp
-  EventInfo.cpp
-  EventListener.cpp
-  Main.cpp
-C:\Users\32633\OneDrive - De La Salle College\Subjects\Coding projects\OpenGL projects\Graphics Renderer\Solution\Main.cpp(286,47): warning C4244: '=': conversion from 'genType' to 'T', possible loss of data
-          with
-          [
-              genType=double
-          ]
-          and
-          [
-              T=float
-          ]
-C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.34.31933\include\memory(3433,56): warning C4244: 'argument': conversion from 'const int' to 'float', possible loss of data
-C:\Users\32633\OneDrive - De La Salle College\Subjects\Coding projects\OpenGL projects\Graphics Renderer\Solution\Main.cpp(145,13): message : see reference to function template instantiation 'std::unique_ptr<Scene,std::default_delete<Scene>> std::make_unique<Scene,GLFWwindow*&,const int&,const int&,0>(GLFWwindow *&,const int &,const int &)' being compiled
-  OrthoCamera.cpp
-  RectangleRenderer.cpp
-  ResourceManager.cpp
-  Scene.cpp
-C:\Users\32633\OneDrive - De La Salle College\Subjects\Coding projects\OpenGL projects\Graphics Renderer\Solution\Scene.cpp(64,29): warning C4244: 'initializing': conversion from '__int64' to 'unsigned int', possible loss of data
-C:\Users\32633\OneDrive - De La Salle College\Subjects\Coding projects\OpenGL projects\Graphics Renderer\Solution\Scene.cpp(103,30): warning C4244: 'initializing': conversion from '__int64' to 'unsigned int', possible loss of data
-  ShaderProgram.cpp
-  SpriteRenderer.cpp
-  Texture2D.cpp
-  Transform.cpp
-  Generating Code...
-  glad.c
-  GraphicsRenderer.vcxproj -> C:\Users\32633\OneDrive - De La Salle College\Subjects\Coding projects\OpenGL projects\Graphics Renderer\Solution\x64\Debug\Build\GraphicsRenderer.exe
+﻿  Main.cpp
+C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.32.31326\include\memory(3423,56): warning C4244: 'argument': conversion from 'const int' to 'float', possible loss of data
+X:\OneDrive - De La Salle College\Subjects\Coding projects\OpenGL projects\Graphics Renderer\Solution\Main.cpp(163): message : see reference to function template instantiation 'std::unique_ptr<Scene,std::default_delete<Scene>> std::make_unique<Scene,GLFWwindow*&,const int&,const int&,0>(GLFWwindow *&,const int &,const int &)' being compiled
+  GraphicsRenderer.vcxproj -> X:\OneDrive - De La Salle College\Subjects\Coding projects\OpenGL projects\Graphics Renderer\Solution\x64\Debug\Build\GraphicsRenderer.exe

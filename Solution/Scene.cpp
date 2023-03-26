@@ -2,6 +2,8 @@
 #include "SpriteRenderer.h"
 #include "RectangleRenderer.h"
 #include "EllipseRenderer.h"
+#include "LineRenderer.h"
+
 
 
 Scene::Scene(GLFWwindow* window, float width, float height, glm::vec3 backgroundColor, std::shared_ptr<OrthoCamera> camera)
@@ -43,9 +45,9 @@ void Scene::AddEntity(std::string name, std::shared_ptr<Entity> entity)
 	unsigned int entityZIndex = entity->transform.GetZIndex();
 
 	// check if the added entity has a zIndex higher than the current highest
-	if (entityZIndex > highestZIndex)
+	if (entityZIndex > _highestZIndex)
 		// set the highest to the new found highest
-		highestZIndex = entity->transform.GetZIndex();
+		SetHighestZIndex(entity->transform.GetZIndex());
 
 
 
@@ -61,7 +63,7 @@ void Scene::AddEntity(std::string name, std::shared_ptr<Entity> entity)
 		// Get the lower bound iterator of the zIndex. This ends up being the index that the value is added to in vector
 		std::vector<unsigned int>::iterator lowerBound = std::lower_bound(_sortedZIndexes.begin(), _sortedZIndexes.end(), entityZIndex);
 		// doing lowerBound - vector.begin() gets the index that it would be adding to
-		unsigned int indexToAddTo = lowerBound - _sortedZIndexes.begin();
+		unsigned int indexToAddTo = (unsigned int) (lowerBound - _sortedZIndexes.begin());
 
 		// Now that you have the lowerBound iterator you can use it to just add the zIndex and entity into our two vectors and it will be ordered
 		_sortedZIndexes.insert(lowerBound, entityZIndex); // first add the z index
@@ -85,7 +87,7 @@ void Scene::RemoveEntity(std::string name)
 		_opaqueEntities.erase(name);
 
 		// check if the found entity has a zIndex that is being removed which is the current highest
-		if (removedEntityZIndex == highestZIndex) 
+		if (removedEntityZIndex == _highestZIndex) 
 			// update the highest to see if there is a lower value now
 			UpdateHighestZIndex();
 	}
@@ -100,7 +102,7 @@ void Scene::RemoveEntity(std::string name)
 		std::vector<std::shared_ptr<Entity>>::iterator iteratorOfEntity = 
 			std::find(_sortedTransparentEntities.begin(), _sortedTransparentEntities.end(), entityToRemove);
 		// used to convert between the iterators of two different types
-		unsigned int indexOfEntity = iteratorOfEntity - _sortedTransparentEntities.begin();
+		unsigned int indexOfEntity = (unsigned int) (iteratorOfEntity - _sortedTransparentEntities.begin());
 
 		// remove
 		_sortedTransparentEntities.erase(iteratorOfEntity);
@@ -113,7 +115,7 @@ void Scene::RemoveEntity(std::string name)
 		_transparentEntities.erase(name);
 
 		// check if the found entity has a zIndex that is being removed which is the current highest
-		if (removedEntityZIndex == highestZIndex)
+		if (removedEntityZIndex == _highestZIndex)
 			// update the highest to see if there is a lower value now
 			UpdateHighestZIndex();
 	}
@@ -173,17 +175,35 @@ void Scene::UpdateHighestZIndex()
 		std::shared_ptr<Entity> iteratedEntity = entityIterator.second;
 
 		// check if the iterated entity has an index higher than the current highest
-		if (iteratedEntity->transform.GetZIndex() > highestZIndex)
+		if (iteratedEntity->transform.GetZIndex() > _highestZIndex)
 			// set to new highest
-			highestZIndex = iteratedEntity->transform.GetZIndex();
+			SetHighestZIndex(iteratedEntity->transform.GetZIndex());
 	}
 
 	// Now you check the last value in the vector of transparent entities sorted by zIndexes in ascending order. Also it needs to have at least 1 element
-	if (_sortedZIndexes.size() != 0 && _sortedZIndexes[_sortedZIndexes.size() - 1] > highestZIndex)
-		highestZIndex = _sortedZIndexes[_sortedZIndexes.size() - 1];
+	if (_sortedZIndexes.size() != 0 && _sortedZIndexes[_sortedZIndexes.size() - 1] > _highestZIndex)
+		SetHighestZIndex(_sortedZIndexes[_sortedZIndexes.size() - 1]);
 	
 
 }
+
+unsigned int Scene::GetHighestZIndex()
+{
+	// simple
+	return _highestZIndex;
+}
+
+void Scene::SetHighestZIndex(unsigned int newHighest)
+{
+	// set to new value
+	_highestZIndex = newHighest;
+
+	if (autoUpdateFarPlane)
+		// then update the far plane to highest
+		mainCamera->farPlane = (float) newHighest;
+
+}
+
 
 void Scene::Update()
 {
@@ -208,8 +228,8 @@ void Scene::Update()
 	processKeyboardInputs();
 	// process any pending events that have been received and then returns immediately
 	glfwPollEvents();
-
-
+	// update tweens
+	tweenManager.UpdateAll();
 
 	// first loop through each opaque entity
 	for (std::pair<std::string, std::shared_ptr<Entity>> entityIterator : _opaqueEntities)
@@ -280,6 +300,14 @@ void Scene::UpdateComponent(Entity::ComponentType type, std::shared_ptr<Componen
 		renderer->Draw(mainCamera);
 		break;
 	}
+	case Entity::LineRenderer:
+	{
+		// cast component to renderer
+		std::shared_ptr<LineRenderer> renderer = std::static_pointer_cast<LineRenderer>(component);
+		// render to screen
+		renderer->Draw(mainCamera);
+		break;
+	}
 	default: // do nothing
 		break;
 	}
@@ -343,10 +371,13 @@ void Scene::UpdateViewport(float width, float height)
 
 // handles any keyboard inputs
 void Scene::processKeyboardInputs() {
-	// on ESC pressed
+	// if ESC pressed
 	if (glfwGetKey(_window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		// close window
 		glfwSetWindowShouldClose(_window, true);
+	
+
+
 }
 
 void Scene::IntialiseListenerMap()

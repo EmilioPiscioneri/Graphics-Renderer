@@ -13,6 +13,11 @@
 #include "ResourceManager.h"
 #include "Scene.h"
 #include "EllipseRenderer.h"
+#include "LineRenderer.h"
+#include "FloatTween.h"
+#include "Vec2Tween.h"
+#include "Vec3Tween.h"
+
 
 
 /* -- Notes/explanation of design choices --
@@ -29,7 +34,7 @@
 * when you do global*2 or right hand side * 2 you get 2:(1*2) -> 2:2 = 1:1
 * But that math is done by my code so it is not a worry when using my transform class which handles that
 * 
-* Rotations are clockwise
+* Rotations are clockwise. Rotations use degrees because it's easier to code with them. I dont' wanna do (pi*3)/2 to rotate 270 degrees yknow
 * 
 * Event listeners are objects with an id because it is a more robust system where just in case you wanted to attach the same function to a specific event type you can.
 * My original method was storing dictionary of function pointers where you can only attach a specific function to an event type once. This means if 
@@ -73,6 +78,19 @@
 * 
 * The higher your max zIndex for a scene is, the greater a number the far plane of scene camera must be
 
+* If you turn autoUpdateFarPlane off for a scene, it will only render any entities where (scene.highestZIndex - entity.zIndex) <  mainCamera.farPlane
+* 
+* If you're using a default transform constructor beware that the default values are (0,0) or (0,0,0) so you have to actually set them to see a value on the screen
+* 
+* Due to c++ not having actual support for static classes like c# and it just seeming better to use a normal class, I just decided to make the TweenManager
+	its own normal class.
+
+* ZIndex is under entity.transform because zIndex is related to the positioning of an entity which is a transformation
+* 
+* I used std::function for tween setters because it allows you to pass in setters for object methods. This is just something that is really useful with the
+	architecture of my current codebase and allows custom implementations of tweened values
+* 
+* Tweens have really big constructors because the initial values should only be set once. This is probably a bad practice but hey it's not awful in my opinion
 * 
 * --- Known bugs/issues ---
 * I believe that camera rotation doesn't rotate that nicely. I think it rotates the entire scene around (0,0) which produces a weird effect.
@@ -174,13 +192,12 @@ int main() {
 	if(wireframeMode)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-
 	// create rect entity
 	std::shared_ptr<Entity> rect = std::make_shared<Entity>();
 
-	rect->transform.size = glm::vec3(100.0f, 100.f, 0.0f);
-	rect->transform.position.x = 250.0f;
-	rect->transform.position.y = 250.0f;
+	rect->transform.offsetSize = glm::vec3(100.0f, 100.f, 0.0f);
+	rect->transform.offsetPosition.x = 250.0f;
+	rect->transform.offsetPosition.y = 250.0f;
 	rect->transform.SetZIndex(2);
 
 	rect->transform.rotation.z = -22.5f;
@@ -193,16 +210,16 @@ int main() {
 	rectRenderer->SetAlpha(0.9f);
 
 	// add to entity
-	rect->AddComponent(Entity::ComponentType::RectangleRenderer, rectRenderer);
+	rect->AddComponent(Entity::RectangleRenderer, rectRenderer);
 
 	scene->AddEntity("rect", rect);
 
 	// create rect2 entity
 	std::shared_ptr<Entity> rect2 = std::make_shared<Entity>();
 
-	rect2->transform.size = glm::vec3(100.0f, 100.f, 0.0f);
-	rect2->transform.position.x = 500.0f;
-	rect2->transform.position.y = 250.0f;
+	rect2->transform.offsetSize = glm::vec3(100.0f, 100.f, 0.0f);
+	rect2->transform.offsetPosition.x = 500.0f;
+	rect2->transform.offsetPosition.y = 250.0f;
 	rect2->transform.SetZIndex(4);
 
 	rect2->transform.rotation.z = 22.5f;
@@ -215,7 +232,7 @@ int main() {
 	rectRenderer2->SetAlpha(1.0f);
 
 	// add to entity
-	rect2->AddComponent(Entity::ComponentType::RectangleRenderer, rectRenderer2);
+	rect2->AddComponent(Entity::RectangleRenderer, rectRenderer2);
 
 	scene->AddEntity("rect2", rect2);
 
@@ -223,9 +240,9 @@ int main() {
 	// create sprite entity
 	std::shared_ptr<Entity> sprite = std::make_shared<Entity>(); 
 
-	sprite->transform.size = glm::vec3(400.0f, 400.f, 0.0f);
-	sprite->transform.position.x = 200.0f;
-	sprite->transform.position.y = 200.0f;
+	sprite->transform.offsetSize = glm::vec3(400.0f, 400.f, 0.0f);
+	sprite->transform.offsetPosition.x = 200.0f;
+	sprite->transform.offsetPosition.y = 200.0f;
 	sprite->transform.SetZIndex(1);
 	sprite->transform.rotation.z = 45.0f;
 	
@@ -238,7 +255,7 @@ int main() {
 	spriteRenderer->SetAlpha(0.7f);
 
 	// add to entity
-	sprite->AddComponent(Entity::ComponentType::SpriteRenderer, spriteRenderer);
+	sprite->AddComponent(Entity::SpriteRenderer, spriteRenderer);
 	//rect.AddComponent(Entity::ComponentType::SpriteRenderer, std::make_shared<SpriteRenderer>());
 
 	scene->AddEntity("sprite", sprite);
@@ -250,9 +267,14 @@ int main() {
 	// create ellipse entity
 	std::shared_ptr<Entity> ellipse = std::make_shared<Entity>();
 
-	ellipse->transform.size = glm::vec3(400.0f, 200.f, 0.0f);
-	ellipse->transform.position.x = 200.0f;
-	ellipse->transform.position.y = 300.0f;
+	//ellipse->transform.type = Transform::Sticky;
+
+	//ellipse->transform.offsetSize = glm::vec3(400.0f, 200.f, 0.0f);
+	ellipse->transform.relativeSize = glm::vec2(0.5f, 0.25f);
+	//ellipse->transform.offsetPosition.x = 200.0f;
+	//ellipse->transform.offsetPosition.y = 300.0f;
+	ellipse->transform.relativePosition.x = 0.25f;
+	ellipse->transform.relativePosition.y = 0.375f;
 	ellipse->transform.SetZIndex(3);
 
 	//ellipse->transform.rotation.z = -22.5f;
@@ -266,26 +288,96 @@ int main() {
 	ellipseRenderer->SetAlpha(0.6f);
 
 	// add to entity
-	ellipse->AddComponent(Entity::ComponentType::EllipseRenderer, ellipseRenderer);
+	ellipse->AddComponent(Entity::EllipseRenderer, ellipseRenderer);
 
 	scene->AddEntity("ellipse", ellipse);
+
+	// Create a line entity
+
+	std::shared_ptr<Entity> line = std::make_shared<Entity>();
+	// actually make it visible
+	line->transform.offsetSize = glm::vec3(1.0f, 1.0f, 0.0f);
+
+	glm::vec2 point1 = glm::vec2(234.26f, -132.53f);
+	glm::vec2 point2 = glm::vec2(400.0f, 400.0f);
+	float lineThickness = 1.5f;
+
+	std::shared_ptr<LineRenderer> lineRenderer = std::make_shared<LineRenderer>(point1, point2, lineThickness);
+
+	//lineRenderer->color = glm::vec3(1.0f,0.0f,0.0f); // red
+	//lineRenderer->color = glm::vec3(0.0f, 1.0f, 0.0f); // green
+	//lineRenderer->color = glm::vec3(0.0f, 0.0f, 1.0f); // blue
+
+	line->transform.SetZIndex(5);
+	//lineRenderer->SetAlpha(0.9f);
+
+	// add to entity
+	line->AddComponent(Entity::LineRenderer, lineRenderer);
+
+	scene->AddEntity("line", line);
 
 	//unsigned int listenerId = scene->AddListener(Scene::EventType::Frame_End,EventListener(func));
 
 	//std::cout << "Created a listener with id " << listenerId << std::endl;
 
+	
+	// testing tween funcitonality 
+	
+	std::shared_ptr<FloatTween> rotationZTween = std::make_shared<FloatTween>(&ellipse->transform.rotation.z, 0.0f, 360.0f, 2.5f);
+	scene->tweenManager.AddTween(rotationZTween, false);
+	rotationZTween->Start();
+
+	std::shared_ptr<Vec2Tween> tweenPos = std::make_shared<Vec2Tween>(&ellipse->transform.offsetPosition, glm::vec2(0.0f,0.0f), glm::vec2(400.0f, -400.0f), 2.5f);
+	scene->tweenManager.AddTween(tweenPos);
+
+	// callback to point1 setter
+	Vec2Tween::SetterCallback p1setter = std::bind(&LineRenderer::SetPoint1,lineRenderer, std::placeholders::_1);
+
+	std::shared_ptr<Vec2Tween> linePos1Tween = std::make_shared<Vec2Tween>(p1setter, point1, glm::vec2(400.0f, 700.0f), 2.5f);
+	scene->tweenManager.AddTween(linePos1Tween);
+
+	// callback to point2 setter
+	Vec2Tween::SetterCallback p2setter = std::bind(&LineRenderer::SetPoint2, lineRenderer, std::placeholders::_1);
+
+	std::shared_ptr<Vec2Tween> linePos2Tween = std::make_shared<Vec2Tween>(p2setter, point2, glm::vec2(700.0f, 700.0f), 1.3f, 2.5f);
+	scene->tweenManager.AddTween(linePos2Tween);
+
+	
+
+
 	// set a breakpoint here if you need to check variables before they go into main loop
 	std::cout << "checkpoint" << std::endl;
+
+
+	// temp camera movement config
+	float camSpeed = 500.0f; // how many global coords cam moves per second
 
 	// main loop that finishes when window is closed.
 	while (!glfwWindowShouldClose(mainWindow))
 	{
 		// --- Update current scene ---
 		
-		// rotate ellipse (revolutions are every 2*pi seconds)
-		ellipse->transform.rotation.z = glm::degrees(glfwGetTime());
-		scene->Update();
+		// temp camera movement code
 
+		float deltaTime = (float)scene->deltaTime;
+
+		// if W pressed
+		if (glfwGetKey(mainWindow, GLFW_KEY_W) == GLFW_PRESS)
+			scene->mainCamera->position.y += camSpeed * deltaTime;
+		// if A pressed
+		if (glfwGetKey(mainWindow, GLFW_KEY_A) == GLFW_PRESS)
+			scene->mainCamera->position.x -= camSpeed * deltaTime;
+		// if S pressed
+		if (glfwGetKey(mainWindow, GLFW_KEY_S) == GLFW_PRESS)
+			scene->mainCamera->position.y -= camSpeed * deltaTime;
+		// if D pressed
+		if (glfwGetKey(mainWindow, GLFW_KEY_D) == GLFW_PRESS)
+			scene->mainCamera->position.x += camSpeed * deltaTime;
+
+		// rotate ellipse (revolutions are every 2*pi seconds)
+		//ellipse->transform.rotation.z = glm::degrees((float)glfwGetTime());
+		scene->Update();
+		
 		//float timeSinceStart = (float)glfwGetTime(); // time since start of window
 		//shaderProgram.setFloat("sinTime", sin(timeSinceStart) / 2.0f + 0.5f); // normalise sin(time since start of application) to be a value between 0-1 based
 		
