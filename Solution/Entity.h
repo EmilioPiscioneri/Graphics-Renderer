@@ -22,7 +22,8 @@ public:
 		SpriteRenderer,
 		RectangleRenderer,
 		EllipseRenderer,
-		LineRenderer
+		LineRenderer,
+		RigidBody2D
 	} ;
 	// whether or not the entity is active in scene. Dictates whether components are called each frame
 	bool isActive = true;

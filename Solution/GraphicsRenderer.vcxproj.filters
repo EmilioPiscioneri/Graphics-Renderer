@@ -25,6 +25,9 @@
     <Filter Include="Renderer Classes">
       <UniqueIdentifier>{e01f5ac9-472d-4d6b-82b9-f90c69bff2e4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Physics Classes">
+      <UniqueIdentifier>{540f0034-78fa-407e-9c29-18986af8f6e3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -95,6 +98,9 @@
     </ClCompile>
     <ClCompile Include="LineRenderer.cpp">
       <Filter>Renderer Classes</Filter>
+    </ClCompile>
+    <ClCompile Include="RigidBody2D.cpp">
+      <Filter>Physics Classes</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -198,6 +204,9 @@
     </ClInclude>
     <ClInclude Include="LineRenderer.h">
       <Filter>Renderer Classes</Filter>
+    </ClInclude>
+    <ClInclude Include="RigidBody2D.h">
+      <Filter>Physics Classes</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

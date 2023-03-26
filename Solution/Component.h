@@ -12,7 +12,7 @@ public:
 	// parent entity of component
 	Entity* parentEntity = nullptr;
 
-	// whether the current component has transparency. (false if opaque)
+	// whether the current component has transparency. (false if opaque or doesn't apply)
 	bool hasTransprency = false;
 };
 

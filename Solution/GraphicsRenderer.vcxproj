@@ -154,6 +154,7 @@
     <ClCompile Include="OrthoCamera.cpp" />
     <ClCompile Include="RectangleRenderer.cpp" />
     <ClCompile Include="ResourceManager.cpp" />
+    <ClCompile Include="RigidBody2D.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="ShaderProgram.cpp" />
     <ClCompile Include="SpriteRenderer.cpp" />
@@ -191,6 +192,7 @@
     <ClInclude Include="OrthoCamera.h" />
     <ClInclude Include="RectangleRenderer.h" />
     <ClInclude Include="ResourceManager.h" />
+    <ClInclude Include="RigidBody2D.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="ShaderProgram.h" />
     <ClInclude Include="SpriteRenderer.h" />

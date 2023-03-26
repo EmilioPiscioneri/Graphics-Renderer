@@ -14,6 +14,7 @@
 #include "Scene.h"
 #include "EllipseRenderer.h"
 #include "LineRenderer.h"
+#include "RigidBody2D.h"
 #include "FloatTween.h"
 #include "Vec2Tween.h"
 #include "Vec3Tween.h"
@@ -240,23 +241,41 @@ int main() {
 	// create sprite entity
 	std::shared_ptr<Entity> sprite = std::make_shared<Entity>(); 
 
-	sprite->transform.offsetSize = glm::vec3(400.0f, 400.f, 0.0f);
+	sprite->transform.offsetSize = glm::vec3(100.0f, 100.f, 0.0f);
 	sprite->transform.offsetPosition.x = 200.0f;
 	sprite->transform.offsetPosition.y = 200.0f;
-	sprite->transform.SetZIndex(1);
-	sprite->transform.rotation.z = 45.0f;
+	sprite->transform.SetZIndex(10);
+	//sprite->transform.rotation.z = 45.0f;
 	
 	
 	// create a new sprite renderer
 	std::shared_ptr<SpriteRenderer> spriteRenderer = std::make_shared<SpriteRenderer>(zazaTexture);
-	spriteRenderer->color = glm::vec3(1.0f, 0.0f, 0.0f); // red
+	//spriteRenderer->color = glm::vec3(1.0f, 0.0f, 0.0f); // red
 	//renderer->color = glm::vec3(0.0f, 1.0f, 0.0f); // green
 	//renderer->color = glm::vec3(0.0f, 0.0f, 1.0f); // blue
-	spriteRenderer->SetAlpha(0.7f);
+	//spriteRenderer->SetAlpha(0.7f);
 
 	// add to entity
 	sprite->AddComponent(Entity::SpriteRenderer, spriteRenderer);
 	//rect.AddComponent(Entity::ComponentType::SpriteRenderer, std::make_shared<SpriteRenderer>());
+
+	// add a rigid body 2D
+	std::shared_ptr<RigidBody2D> spriteRigidBody = std::make_shared<RigidBody2D>();
+	// launch angle (anti clockwise)
+	constexpr float launchAngle = glm::radians(60.0f);
+	// how many metres to launch by
+	float launchSize = 6.0f;
+
+	// math is simply just basic unit circle stuff * magnitude
+	glm::vec2 velocity = glm::vec2(cos(launchAngle), sin(launchAngle)) * launchSize;
+
+	spriteRigidBody->velocity = velocity;
+	spriteRigidBody->isSimulated = false;
+	//spriteRigidBody->gravityScale = 0.0f;
+	//spriteRigidBody->linearDrag = 0.7f; // exaggerated drag
+
+	// add to entity
+	sprite->AddComponent(Entity::RigidBody2D, spriteRigidBody);
 
 	scene->AddEntity("sprite", sprite);
 
@@ -298,9 +317,9 @@ int main() {
 	// actually make it visible
 	line->transform.offsetSize = glm::vec3(1.0f, 1.0f, 0.0f);
 
-	glm::vec2 point1 = glm::vec2(234.26f, -132.53f);
-	glm::vec2 point2 = glm::vec2(400.0f, 400.0f);
-	float lineThickness = 1.5f;
+	glm::vec2 point1 = glm::vec2(25.0f, 25.0f);
+	glm::vec2 point2 = glm::vec2(100.0f, 200.0f);
+	float lineThickness = 4.0f;
 
 	std::shared_ptr<LineRenderer> lineRenderer = std::make_shared<LineRenderer>(point1, point2, lineThickness);
 
@@ -323,6 +342,7 @@ int main() {
 	
 	// testing tween funcitonality 
 	
+	/*
 	std::shared_ptr<FloatTween> rotationZTween = std::make_shared<FloatTween>(&ellipse->transform.rotation.z, 0.0f, 360.0f, 2.5f);
 	scene->tweenManager.AddTween(rotationZTween, false);
 	rotationZTween->Start();
@@ -341,9 +361,11 @@ int main() {
 
 	std::shared_ptr<Vec2Tween> linePos2Tween = std::make_shared<Vec2Tween>(p2setter, point2, glm::vec2(700.0f, 700.0f), 1.3f, 2.5f);
 	scene->tweenManager.AddTween(linePos2Tween);
-
+	//*/
 	
-
+	// after this many seconds since window start, launch sprite
+	double launchTime = 2.0f;
+	bool launched = false;
 
 	// set a breakpoint here if you need to check variables before they go into main loop
 	std::cout << "checkpoint" << std::endl;
@@ -360,6 +382,12 @@ int main() {
 		// temp camera movement code
 
 		float deltaTime = (float)scene->deltaTime;
+
+		if (!launched && glfwGetTime() >= launchTime)
+		{
+			launched = true;
+			spriteRigidBody->isSimulated = true; // turn on
+		}
 
 		// if W pressed
 		if (glfwGetKey(mainWindow, GLFW_KEY_W) == GLFW_PRESS)

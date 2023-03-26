@@ -3,6 +3,8 @@
 #include "RectangleRenderer.h"
 #include "EllipseRenderer.h"
 #include "LineRenderer.h"
+#include "RigidBody2D.h"
+
 
 
 
@@ -307,6 +309,13 @@ void Scene::UpdateComponent(Entity::ComponentType type, std::shared_ptr<Componen
 		// render to screen
 		renderer->Draw(mainCamera);
 		break;
+	}
+	case Entity::RigidBody2D: 
+	{
+		// cast component to rigid body
+		std::shared_ptr<RigidBody2D> rigidBody = std::static_pointer_cast<RigidBody2D>(component);
+		// calculate physics n that
+		rigidBody->Update();
 	}
 	default: // do nothing
 		break;

@@ -65,6 +65,13 @@ public:
 
 	// This tween manager manages all tweens for the current scene
 	TweenManager tweenManager = TweenManager(this);
+	
+	// how many pixels (global coords) there are per metre in scene. Used for physics calculations
+	float pixelsPerMetre = 100.0f;
+
+	// This is the gravitational acceleration (in metres per second per second -> m/s^2) of the scene.
+	// The default is the approximate gravitational acceleration on earth's surface.
+	float gravity = 9.807f;
 
 	// update the scene
 	void Update();
