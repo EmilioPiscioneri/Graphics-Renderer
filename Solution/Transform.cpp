@@ -107,6 +107,7 @@ glm::mat4 Transform::ToMatrix(std::shared_ptr<OrthoCamera> mainCamera)
     // Normally you would add size.x/2 and size.y/2 but because the size is in global units you times that value by 2
     // so you end up getting size.x/2 * 2 and size.y/2 * 2 where the twos just cancel each other out 
 
+
     // get global pos and size
     glm::vec2 globalPosition = GetGlobalPosition(mainCamera);
     glm::vec3 globalSize = GetGlobalSize(mainCamera);
@@ -122,9 +123,10 @@ glm::mat4 Transform::ToMatrix(std::shared_ptr<OrthoCamera> mainCamera)
         // else, the transform isn't attached to entity or that entity isn't attached to a scene. Anyway zIndex only matters if it is attached to a scene so just set to 0 (right in front of camera)
         transMatrix = glm::translate(transMatrix, glm::vec3((globalPosition.x * 2.0f) + globalSize.x, (globalPosition.y * 2.0f) + globalSize.y, 0));
 
-    transMatrix = glm::rotate(transMatrix,glm:: radians(-(rotation.x)), glm::vec3(1.0f, 0.0f, 0.0f)); // rotate about x axis
-    transMatrix = glm::rotate(transMatrix, glm::radians(-(rotation.y)), glm::vec3(0.0f, 1.0f, 0.0f)); // rotate about y axis
-    transMatrix = glm::rotate(transMatrix, glm::radians(-(rotation.z)), glm::vec3(0.0f, 0.0f, 1.0f)); // rotate about z axis
+    transMatrix = glm::rotate(transMatrix,-(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f)); // rotate about x axis
+    transMatrix = glm::rotate(transMatrix, -(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f)); // rotate about y axis
+    transMatrix = glm::rotate(transMatrix, -(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f)); // rotate about z axis
+
     transMatrix = glm::scale(transMatrix, globalSize);
     return transMatrix; // return transformed matrix
 }
@@ -143,9 +145,9 @@ glm::mat4 Transform::ValuesToMatrix(glm::vec2 position, glm::vec3 size, glm::vec
     // so you end up getting size.x/2 * 2 and size.y/2 * 2 where the twos just cancel each other out 
 
     transMatrix = glm::translate(transMatrix, glm::vec3((position.x * 2.0f) + size.x, (position.y * 2.0f) + size.y, 0));
-    transMatrix = glm::rotate(transMatrix, glm::radians(-(rotation.x)), glm::vec3(1.0f, 0.0f, 0.0f)); // rotate about x axis
-    transMatrix = glm::rotate(transMatrix, glm::radians(-(rotation.y)), glm::vec3(0.0f, 1.0f, 0.0f)); // rotate about y axis
-    transMatrix = glm::rotate(transMatrix, glm::radians(-(rotation.z)), glm::vec3(0.0f, 0.0f, 1.0f)); // rotate about z axis
+    transMatrix = glm::rotate(transMatrix, -(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f)); // rotate about x axis
+    transMatrix = glm::rotate(transMatrix, -(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f)); // rotate about y axis
+    transMatrix = glm::rotate(transMatrix, -(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f)); // rotate about z axis
     transMatrix = glm::scale(transMatrix, size);
 
     return transMatrix;

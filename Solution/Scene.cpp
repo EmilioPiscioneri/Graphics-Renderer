@@ -4,6 +4,7 @@
 #include "EllipseRenderer.h"
 #include "LineRenderer.h"
 #include "RigidBody2D.h"
+#include "BoxCollider.h"
 
 
 
@@ -51,6 +52,13 @@ void Scene::AddEntity(std::string name, std::shared_ptr<Entity> entity)
 		// set the highest to the new found highest
 		SetHighestZIndex(entity->transform.GetZIndex());
 
+	// ----- deal with colliders ----
+
+	if (entity->ComponentExists(Entity::BoxCollider))
+		// add collider
+		_entityColliders.insert(std::pair <std::string, std::shared_ptr<Collider>>(name, entity->GetComponent<Collider>(Entity::BoxCollider)));
+
+	
 
 
 	// ----- deal with transparency ----
@@ -80,6 +88,9 @@ void Scene::AddEntity(std::string name, std::shared_ptr<Entity> entity)
 
 void Scene::RemoveEntity(std::string name)
 {
+	// if it has a collider stored under entity colliders in scene
+	if (ItemExistsInMap<std::shared_ptr<Collider>>(name, _entityColliders))
+		_entityColliders.erase(name); // remove it
 
 	// if the entity exists in opaue entites then remove it
 	if (ItemExistsInMap<std::shared_ptr<Entity>>(name, _opaqueEntities)) {
@@ -167,6 +178,16 @@ void Scene::UpdateEntityName(std::shared_ptr<Entity> entity, std::string newName
 
 	// add the new name to the entity (don't need to do any validation because add entity function does for me/you/I'm conflicted on the pronoun to put here)
 	AddEntity(newName, entity);
+}
+
+void Scene::UpdateEntityCollider(std::string entityName, std::shared_ptr<Collider> newCollider)
+{
+	// if not setting the collider to nullptr
+	if (newCollider != nullptr)
+		_entityColliders[entityName] = newCollider; // set collider
+	// else if there is already a recorded entity and we're setting it to null
+	else if (_entityColliders.find(entityName) != _entityColliders.end()) // redundant: && newCollider == nullptr 	
+		_entityColliders.erase(entityName);
 }
 
 void Scene::UpdateHighestZIndex()
@@ -316,8 +337,52 @@ void Scene::UpdateComponent(Entity::ComponentType type, std::shared_ptr<Componen
 		std::shared_ptr<RigidBody2D> rigidBody = std::static_pointer_cast<RigidBody2D>(component);
 		// calculate physics n that
 		rigidBody->Update();
+		break;
 	}
+	// --- colliders ---
+	case Entity::BoxCollider:
+	{
+		// handle in a seperate function
+		UpdateCollisionComponent(type, component);
+		break;
+	}
+	// -- end of colliders ---
 	default: // do nothing
+		break;
+	}
+}
+
+void Scene::UpdateCollisionComponent(Entity::ComponentType type, std::shared_ptr<Component> component)
+{
+	switch (type)
+	{
+	case Entity::BoxCollider: 
+	{
+		// cast component
+		std::shared_ptr<BoxCollider> boxCollider = std::static_pointer_cast<BoxCollider>(component);
+
+		// if the box collider is attached to a rigid body and that body doesn't have simulated off
+		if(boxCollider->attachedRigidBody != nullptr && boxCollider->attachedRigidBody->isSimulated)
+			// loop thru every other collider in scene
+			for (std::pair<std::string, std::shared_ptr<Collider>> itertator : _entityColliders)
+			{
+				// if the current iterated collider does not equal the current one we're checking and that iterated collider is simulated
+				if (itertator.second != boxCollider && itertator.second->attachedRigidBody != nullptr && itertator.second->attachedRigidBody->isSimulated)
+				{
+					// check for a collision
+					bool collision = boxCollider->CheckCollision(itertator.second, mainCamera);
+					// if there was a collision set the entity's colour to red, else white
+					if (collision)
+						boxCollider->GetParentEntity()->GetComponent<SpriteRenderer>(Entity::SpriteRenderer)->color = glm::vec3(1.0f, 0.0f, 0.0f);
+					else
+						boxCollider->GetParentEntity()->GetComponent<SpriteRenderer>(Entity::SpriteRenderer)->color = glm::vec3(1.0f);
+
+
+				}
+			}
+		break;
+	}
+	default:
 		break;
 	}
 }

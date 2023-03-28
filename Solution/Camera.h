@@ -10,7 +10,7 @@ public:
 	// the position of the current camera
 	glm::vec2 position = glm::vec2(0.0f);
 
-	// rotation of camera about each axis in degrees E.g. (0,45,90) rotates 45 degrees around the y axis and then 90 degrees around the z axis
+	// rotation of camera about each axis in radians E.g. (0,pi/6,pi/2) rotates 30 degrees around the y axis and then 90 degrees around the z axis
 	glm::vec3 rotation = glm::vec3(0.0f);
 
 	// get the view matrix for the current camera with all transforms applied

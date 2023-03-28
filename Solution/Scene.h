@@ -9,6 +9,7 @@
 #include "OrthoCamera.h"
 #include "EventListener.h"
 #include "TweenManager.h"
+#include "Collider.h"
 
 // Create a new scene to render entities.
 // Note that you must call the UpdateViewport function of this scene whenever the viewport is updated
@@ -43,6 +44,9 @@ public:
 	// When you want to change an entity's name, call this function first and then change the private _name value of entity class. 
 	// This updates the stored maps of entities with the new name
 	void UpdateEntityName(std::shared_ptr<Entity> entity, std::string newName);
+
+	// This updates the stored map of entity colliders with the new collider using entity's name
+	void UpdateEntityCollider(std::string entityName, std::shared_ptr<Collider> newCollider);
 
 	// linearly searches through all entities in scene to find the highest zIndex. 
 	// Only call this when the entity with the highest index has been removed or changed
@@ -103,6 +107,9 @@ public:
 private:
 	// private variables come after public because they need to access some public values
 	
+	// this is a map of all colliders which are attached to entities in the current scene
+	std::map < std::string, std::shared_ptr<Collider>> _entityColliders;
+
 	// highest zIndex that an entity has, in current scene
 	unsigned int _highestZIndex = 0;
 
@@ -160,6 +167,10 @@ private:
 	std::string GetValidName(std::string inputName);
 	// Run update function on a component based on type
 	void UpdateComponent(Entity::ComponentType type, std::shared_ptr<Component> component);
+
+	// Run update function on a collision component based on type
+	void UpdateCollisionComponent(Entity::ComponentType type, std::shared_ptr<Component> component);
+
 	//when the last frame occurred in seconds (relative to how long program has been running for)
 	double lastFrameTime;
 };

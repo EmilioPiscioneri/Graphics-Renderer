@@ -141,6 +141,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="BoxCollider.cpp" />
+    <ClCompile Include="Collider.cpp" />
+    <ClCompile Include="Component.cpp" />
     <ClCompile Include="DoubleTween.cpp" />
     <ClCompile Include="EllipseRenderer.cpp" />
     <ClCompile Include="Entity.cpp" />
@@ -179,7 +182,9 @@
     <None Include="VertexShaders\SpriteDefault.vert" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BoxCollider.h" />
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="Collider.h" />
     <ClInclude Include="Component.h" />
     <ClInclude Include="DoubleTween.h" />
     <ClInclude Include="EllipseRenderer.h" />

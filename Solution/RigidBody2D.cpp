@@ -1,21 +1,29 @@
 #include "RigidBody2D.h"
+#include "Collider.h"
+
+RigidBody2D::~RigidBody2D()
+{
+	// if attached, set to null
+	if(_attachedCollider != nullptr)
+		_attachedCollider->attachedRigidBody = nullptr;
+}
 
 void RigidBody2D::Update()
 {
-	// do nothing if not simulated
-	if (!isSimulated)
+	// do nothing if not simulated or shouldn't move
+	if (!isSimulated || isStatic)
 		return;
 
 	// check if an entity is attached to current component
-	if (parentEntity == nullptr)
+	if (_parentEntity == nullptr)
 		throw std::exception("Tried to update a Rigid body which isn't attached to an entity");
 
 	// check if the entity is attached to a scene
-	if (parentEntity->parentScene == nullptr)
+	if (_parentEntity->parentScene == nullptr)
 		throw std::exception("Tried to update a Rigid body which has an entity that isn't attached to a scene");
 
 	// scene to base calculations off
-	Scene* scene = parentEntity->parentScene;
+	Scene* scene = _parentEntity->parentScene;
 
 	// -- Calculate updated velocity of rigid body using drag and gravity acceleration --
 
@@ -63,5 +71,33 @@ void RigidBody2D::Update()
 	velocity += acceleration;
 
 	// then add the velocity times by how much time has passed scaled by how many pixels a metre represents
-	parentEntity->transform.offsetPosition += velocity * (float)scene->deltaTime * scene->pixelsPerMetre;
+	_parentEntity->transform.offsetPosition += velocity * (float)scene->deltaTime * scene->pixelsPerMetre;
+}
+
+std::shared_ptr <Collider> RigidBody2D::GetAttachedCollider()
+{
+	return _attachedCollider;
+}
+
+void RigidBody2D::SetAttachedCollider(std::shared_ptr<Collider> colliderToAttach)
+{
+	_attachedCollider = colliderToAttach;
+	// if not detatching collider
+	if(colliderToAttach != nullptr)
+		colliderToAttach->attachedRigidBody = this;
+
+	if (_parentEntity != nullptr && _parentEntity->parentScene != nullptr)
+		// update entity's collider. The function will deal with nullptr
+		_parentEntity->parentScene->UpdateEntityCollider(_parentEntity->GetName(), colliderToAttach);
+}
+
+void RigidBody2D::SetParentEntity(Entity* parent)
+{
+	// if the component is being removed from entity
+	if (parent == nullptr)
+		// detatch collider, doesn't matter if it's already attatched
+		SetAttachedCollider(nullptr);
+
+	// set the parent entity to desired parent
+	_parentEntity = parent;
 }

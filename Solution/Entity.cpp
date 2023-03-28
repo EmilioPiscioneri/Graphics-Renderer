@@ -1,11 +1,17 @@
 #include "Entity.h"
 #include "Scene.h"
+#include "RigidBody2D.h"
 
 Entity::Entity(Transform transform)
 {
     // set the transform's parent entity
     transform.parentEntity = this;
     this->transform = transform;
+}
+
+Entity::~Entity()
+{
+    std::cout << "Entity with name " << _name << " was destroyed" << std::endl;
 }
 
 bool Entity::GetHasTransparency()
@@ -55,21 +61,25 @@ void Entity::SetName(std::string newName, bool updateInScene)
 
 void Entity::AddComponent(ComponentType type, std::shared_ptr<Component> component)
 {
+    // error check
+    if (ComponentExists(type)){
+        // can't specify what type of component enum tried to add because that requires a switch case and I should just get it right first time yknow
+        std::cout << "ERROR: Tried to add component to entity " << _name << " which already exists" << std::endl;
+        return;
+    }
+
+    // insert the new component to list of added components
+    _components.insert(std::pair<ComponentType, std::shared_ptr<Component>>(type, component));
+    
     // set the component's parent entity
-    component->parentEntity = this;
+    component->SetParentEntity(this);
 
     // If the added component has transparency
     if (component->hasTransprency)
         // set the current entity's transparency
         SetHasTransparency(true);
 
-    // if component doesnt exist
-    if (!ComponentExists(type))
-        // insert the new component
-        _components.insert(std::pair<ComponentType, std::shared_ptr<Component>>(type, component));
-    else
-        // can't specify what type of component enum tried to add because that requires a switch case and I should just get it right first time yknow
-        std::cout << "ERROR: Tried to add component to entity " << _name << " which already exists" << std::endl;
+    
 }
 
 
@@ -81,6 +91,9 @@ void Entity::RemoveComponent(ComponentType type)
     // if the component exists
     if (compToRemove != nullptr) {
         // TODO: check if a removed component is destroyed from memory (they are stored as a base class shared pointer so idk) 
+  
+        // update its parent entity to null
+        compToRemove->SetParentEntity(nullptr);
 
         // remove component from map
         _components.erase(type);

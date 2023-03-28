@@ -18,6 +18,7 @@
 #include "FloatTween.h"
 #include "Vec2Tween.h"
 #include "Vec3Tween.h"
+#include "BoxCollider.h"
 
 
 
@@ -35,7 +36,8 @@
 * when you do global*2 or right hand side * 2 you get 2:(1*2) -> 2:2 = 1:1
 * But that math is done by my code so it is not a worry when using my transform class which handles that
 * 
-* Rotations are clockwise. Rotations use degrees because it's easier to code with them. I dont' wanna do (pi*3)/2 to rotate 270 degrees yknow
+* Rotations are clockwise. Rotations use radians because that's just standard for maths but also because it prevents a degrees to radians function running each
+	time you want to do calculations on a transform
 * 
 * Event listeners are objects with an id because it is a more robust system where just in case you wanted to attach the same function to a specific event type you can.
 * My original method was storing dictionary of function pointers where you can only attach a specific function to an event type once. This means if 
@@ -201,7 +203,7 @@ int main() {
 	rect->transform.offsetPosition.y = 250.0f;
 	rect->transform.SetZIndex(2);
 
-	rect->transform.rotation.z = -22.5f;
+	rect->transform.rotation.z = glm::radians(-22.5f);
 
 	// create a new rect renderer
 	std::shared_ptr<RectangleRenderer> rectRenderer = std::make_shared<RectangleRenderer>();
@@ -223,7 +225,7 @@ int main() {
 	rect2->transform.offsetPosition.y = 250.0f;
 	rect2->transform.SetZIndex(4);
 
-	rect2->transform.rotation.z = 22.5f;
+	rect2->transform.rotation.z = glm::radians(22.5f);
 
 	// create a new rect renderer
 	std::shared_ptr<RectangleRenderer> rectRenderer2 = std::make_shared<RectangleRenderer>();
@@ -245,7 +247,7 @@ int main() {
 	sprite->transform.offsetPosition.x = 200.0f;
 	sprite->transform.offsetPosition.y = 200.0f;
 	sprite->transform.SetZIndex(10);
-	//sprite->transform.rotation.z = 45.0f;
+	//sprite->transform.rotation.z = glm::radians(45.0f);
 	
 	
 	// create a new sprite renderer
@@ -270,16 +272,87 @@ int main() {
 	glm::vec2 velocity = glm::vec2(cos(launchAngle), sin(launchAngle)) * launchSize;
 
 	spriteRigidBody->velocity = velocity;
-	spriteRigidBody->isSimulated = false;
+	spriteRigidBody->isStatic = true;
 	//spriteRigidBody->gravityScale = 0.0f;
 	//spriteRigidBody->linearDrag = 0.7f; // exaggerated drag
-
+	
 	// add to entity
 	sprite->AddComponent(Entity::RigidBody2D, spriteRigidBody);
 
+	std::shared_ptr<BoxCollider> spriteCollider = std::make_shared<BoxCollider>();
+	sprite->AddComponent(Entity::BoxCollider, spriteCollider); // attach to entity
+	//spriteCollider->size = glm::vec2(2.0f,2.0f);
+	//spriteCollider->position = glm::vec2(-50.0f, -50.0f);
+
+	spriteRigidBody->SetAttachedCollider(spriteCollider); // attach the collider
+	
+
+
+	auto colliderVertices = spriteCollider->GetBoundingVertices(scene->mainCamera);
+
+	// -- DEBUGGING -- create 4 lines that connect each bounding box of the collider
+	/*auto colLine1 = std::make_shared<Entity>(Transform(glm::vec2(0.0f,0.0f),glm::vec3(1.0f,1.0f,0.0f)));
+	colLine1->transform.SetZIndex(15);
+	auto colLineRenderer1 = std::make_shared<LineRenderer>(colliderVertices[0], colliderVertices[1]);
+	colLine1->AddComponent(Entity::LineRenderer, colLineRenderer1);
+	scene->AddEntity("colLine1", colLine1);
+	auto colLine2 = std::make_shared<Entity>(Transform(glm::vec2(0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 0.0f)));
+	colLine2->transform.SetZIndex(15);
+	auto colLineRenderer2 = std::make_shared<LineRenderer>(colliderVertices[1], colliderVertices[3]);
+	colLine2->AddComponent(Entity::LineRenderer, colLineRenderer2);
+	scene->AddEntity("colLine2", colLine2);
+	auto colLine3 = std::make_shared<Entity>(Transform(glm::vec2(0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 0.0f)));
+	colLine3->transform.SetZIndex(15);
+	auto colLineRenderer3 = std::make_shared<LineRenderer>(colliderVertices[3], colliderVertices[2]);
+	colLine3->AddComponent(Entity::LineRenderer, colLineRenderer3);
+	scene->AddEntity("colLine3", colLine3);
+	auto colLine4 = std::make_shared<Entity>(Transform(glm::vec2(0.0f, 0.0f), glm::vec3(1.0f, 1.0f, 0.0f)));
+	colLine4->transform.SetZIndex(15);
+	auto colLineRenderer4 = std::make_shared<LineRenderer>(colliderVertices[2], colliderVertices[0]);
+	colLine4->AddComponent(Entity::LineRenderer, colLineRenderer4);
+	scene->AddEntity("colLine4", colLine4);*/
+	// -- DEBUGGING END --
+	
+
 	scene->AddEntity("sprite", sprite);
 
-	
+	// create sprite entity
+	std::shared_ptr<Entity> sprite2 = std::make_shared<Entity>();
+
+	sprite2->transform.offsetSize = glm::vec3(200.0f, 80.f, 0.0f);
+	sprite2->transform.offsetPosition.x = 500.0f;
+	sprite2->transform.offsetPosition.y = 300.0f;
+	sprite2->transform.SetZIndex(11);
+	//sprite->transform.rotation.z = glm::radians(45.0f);
+
+
+	// create a new sprite renderer
+	std::shared_ptr<SpriteRenderer> spriteRenderer2 = std::make_shared<SpriteRenderer>(zazaTexture);
+	// add to entity
+	sprite2->AddComponent(Entity::SpriteRenderer, spriteRenderer2);
+
+	// add a rigid body 2D
+	std::shared_ptr<RigidBody2D> spriteRigidBody2 = std::make_shared<RigidBody2D>();
+	spriteRigidBody2->isStatic = true;
+
+	// add to entity
+	sprite2->AddComponent(Entity::RigidBody2D, spriteRigidBody2);
+
+	std::shared_ptr<BoxCollider> spriteCollider2 = std::make_shared<BoxCollider>();
+	sprite2->AddComponent(Entity::BoxCollider, spriteCollider2); // attach to entity
+	//spriteCollider->size = glm::vec2(2.0f,2.0f);
+	//spriteCollider->position = glm::vec2(-50.0f, -50.0f);
+
+	spriteRigidBody2->SetAttachedCollider(spriteCollider2); // attach the collider
+
+
+	scene->AddEntity("sprite2", sprite2);
+
+
+	//sprite->RemoveComponent(Entity::BoxCollider); // detatch collider
+
+	//spriteRigidBody->SetAttachedCollider(nullptr); // detatch the collider
+
 
 	
 
@@ -343,7 +416,7 @@ int main() {
 	// testing tween funcitonality 
 	
 	/*
-	std::shared_ptr<FloatTween> rotationZTween = std::make_shared<FloatTween>(&ellipse->transform.rotation.z, 0.0f, 360.0f, 2.5f);
+	std::shared_ptr<FloatTween> rotationZTween = std::make_shared<FloatTween>(&ellipse->transform.rotation.z, 0.0f, glm::radians(360.0f), 2.5f);
 	scene->tweenManager.AddTween(rotationZTween, false);
 	rotationZTween->Start();
 
@@ -386,7 +459,7 @@ int main() {
 		if (!launched && glfwGetTime() >= launchTime)
 		{
 			launched = true;
-			spriteRigidBody->isSimulated = true; // turn on
+			//spriteRigidBody->isStatic = false; // turn on
 		}
 
 		// if W pressed
@@ -402,8 +475,14 @@ int main() {
 		if (glfwGetKey(mainWindow, GLFW_KEY_D) == GLFW_PRESS)
 			scene->mainCamera->position.x += camSpeed * deltaTime;
 
+		double xPos = 0.0f;
+		double yPos = 0.0f;
+		glfwGetCursorPos(mainWindow, &xPos, &yPos);
+		yPos = scene->mainCamera->height - yPos; // convert from top-left based to bottom-left
+		sprite->transform.offsetPosition = glm::vec2((float)xPos, (float)yPos);
+
 		// rotate ellipse (revolutions are every 2*pi seconds)
-		//ellipse->transform.rotation.z = glm::degrees((float)glfwGetTime());
+		//ellipse->transform.rotation.z = (float)glfwGetTime();
 		scene->Update();
 		
 		//float timeSinceStart = (float)glfwGetTime(); // time since start of window

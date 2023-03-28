@@ -49,13 +49,13 @@ void EllipseRenderer::SetAlpha(float newAlpha)
 void EllipseRenderer::Draw(std::shared_ptr<OrthoCamera> camera)
 {
 	
-	if (parentEntity == nullptr)
+	if (_parentEntity == nullptr)
 		throw std::exception("Tried to draw a sprite which doesn't have a parent entity");
 
 	shaderProgram->Use();
 
 	// get the transform of this renderer's parent
-	Transform ellipseTransform = parentEntity->transform;
+	Transform ellipseTransform = _parentEntity->transform;
 
 	glm::mat4 view = camera->GetViewMatrix();
 	shaderProgram->SetMatrix4("view", view);
@@ -83,11 +83,9 @@ void EllipseRenderer::Draw(std::shared_ptr<OrthoCamera> camera)
 	// same logic then applies to y axis
 	float radiusY = ellipseCentre.y - ellipseGlobalPosition.y;
 
-	// convert to radians because trig functinos don't take degrees
-	float zRotationInRadians = glm::radians(ellipseTransform.rotation.z);
 	// cache what the sine and cosine of the rotation in radians is
-	float sinZRotation = sin(zRotationInRadians);
-	float cosZRotation = cos(zRotationInRadians);
+	float sinZRotation = sin(ellipseTransform.rotation.z);
+	float cosZRotation = cos(ellipseTransform.rotation.z);
 
 	// -- Send the calculated values --
 

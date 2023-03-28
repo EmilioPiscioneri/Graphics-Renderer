@@ -14,6 +14,7 @@ class Entity
 public:
 	// create an entity with transform
 	Entity(Transform transform = Transform());
+	~Entity();
 
 	// parent scene of the current entity
 	Scene* parentScene = nullptr;
@@ -23,7 +24,8 @@ public:
 		RectangleRenderer,
 		EllipseRenderer,
 		LineRenderer,
-		RigidBody2D
+		RigidBody2D,
+		BoxCollider,
 	} ;
 	// whether or not the entity is active in scene. Dictates whether components are called each frame
 	bool isActive = true;
@@ -71,14 +73,16 @@ public:
 	// The map stores only base component pointers to each component so you must cast to appropriate type
 	std::map<ComponentType, std::shared_ptr<Component>>& GetComponents();
 	
+	// Returns whether or not an entity contains a component of type
+	bool ComponentExists(ComponentType type);
+
 protected:
 	// Name of entity. Will be empty until entity is added to a scene with specified name
 	std::string _name = "";
 	
 	// Whether the entity has any transparency (if opaque then false)
 	bool _hasTransparency = false;
-	// Returns whether or not an entity contains a component of type
-	bool ComponentExists(ComponentType type);
+	
 	// function that returns base component using type
 	std::shared_ptr<Component> GetBaseComponent(ComponentType type);
 

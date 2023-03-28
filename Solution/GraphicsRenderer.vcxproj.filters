@@ -102,6 +102,15 @@
     <ClCompile Include="RigidBody2D.cpp">
       <Filter>Physics Classes</Filter>
     </ClCompile>
+    <ClCompile Include="BoxCollider.cpp">
+      <Filter>Physics Classes</Filter>
+    </ClCompile>
+    <ClCompile Include="Collider.cpp">
+      <Filter>Physics Classes</Filter>
+    </ClCompile>
+    <ClCompile Include="Component.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="FragmentShaders\EllipseDefault.frag">
@@ -206,6 +215,12 @@
       <Filter>Renderer Classes</Filter>
     </ClInclude>
     <ClInclude Include="RigidBody2D.h">
+      <Filter>Physics Classes</Filter>
+    </ClInclude>
+    <ClInclude Include="Collider.h">
+      <Filter>Physics Classes</Filter>
+    </ClInclude>
+    <ClInclude Include="BoxCollider.h">
       <Filter>Physics Classes</Filter>
     </ClInclude>
   </ItemGroup>

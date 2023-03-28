@@ -66,8 +66,8 @@ void LineRenderer::SetAlpha(float newAlpha)
 		// but also set it so transparency is off
 		this->hasTransprency = false;
 		// if the current renderer has a parent entity set it to no transparency
-		if (parentEntity != nullptr)
-			parentEntity->SetHasTransparency(false);
+		if (_parentEntity != nullptr)
+			_parentEntity->SetHasTransparency(false);
 	}
 	else
 	{
@@ -75,20 +75,20 @@ void LineRenderer::SetAlpha(float newAlpha)
 		_alpha = newAlpha;
 		this->hasTransprency = true;
 		// if the current renderer has a parent entity set it to has transparency
-		if (parentEntity != nullptr)
-			parentEntity->SetHasTransparency(true);
+		if (_parentEntity != nullptr)
+			_parentEntity->SetHasTransparency(true);
 	}
 }
 
 void LineRenderer::Draw(std::shared_ptr<OrthoCamera> camera)
 {
-	if (parentEntity == nullptr)
+	if (_parentEntity == nullptr)
 		throw std::exception("Tried to draw a sprite which doesn't have a parent entity");
 
 	shaderProgram->Use();
 
 	// get the transform of this renderer's parent
-	Transform spriteTransform = parentEntity->transform;
+	Transform spriteTransform = _parentEntity->transform;
 
 	glm::mat4 view = camera->GetViewMatrix();
 	shaderProgram->SetMatrix4("view", view);

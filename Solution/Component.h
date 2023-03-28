@@ -9,10 +9,18 @@ class Component
 public:
 	// An enum of Entity::ComponentType that specifies what type of component this is
 	unsigned int type;
-	// parent entity of component
-	Entity* parentEntity = nullptr;
+	
+	// returns pointer to parent entity of component
+	Entity* GetParentEntity();
+
+	// sets the parent entity of the component
+	virtual void SetParentEntity(Entity* parent);
 
 	// whether the current component has transparency. (false if opaque or doesn't apply)
 	bool hasTransprency = false;
+	
+protected:
+	// parent entity of component
+	Entity* _parentEntity = nullptr;
 };
 
