@@ -10,6 +10,7 @@ class Scene;
 // Base object which holds functional components which perform different behaviour in a scene.
 // NOTE: Entities should always be created as smart pointers so they never go out of scope and then become removed from stack
 class Entity
+	: public std::enable_shared_from_this<Entity>
 {
 public:
 	// create an entity with transform

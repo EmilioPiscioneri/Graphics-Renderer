@@ -29,7 +29,7 @@ void Entity::SetHasTransparency(bool newTransparency)
         // set it to new transparency
         _hasTransparency = newTransparency;
         // update the entity in the scene so it can be sorted properly
-        parentScene->UpdateEntityTransparency(std::shared_ptr<Entity>(this));
+        parentScene->UpdateEntityTransparency(shared_from_this());
     }
     else if (parentScene == nullptr)
         // else isn't attached to scene, doesn't matter if there has been a change just set it to new value. It gets handled whenever entity is added to a scene
@@ -48,7 +48,7 @@ void Entity::SetName(std::string newName, bool updateInScene)
     if (updateInScene && parentScene != nullptr && newName != _name)
     {
         // update the entity's name in scene
-        parentScene->UpdateEntityName(std::shared_ptr<Entity>(this), newName);
+        parentScene->UpdateEntityName(shared_from_this(), newName);
         // Don't need to set the new name of entity, it is set throught the UpdateEntityName function
         
     }

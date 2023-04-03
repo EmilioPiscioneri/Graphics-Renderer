@@ -42,7 +42,7 @@
 * Event listeners are objects with an id because it is a more robust system where just in case you wanted to attach the same function to a specific event type you can.
 * My original method was storing dictionary of function pointers where you can only attach a specific function to an event type once. This means if 
 	you wanted to listen for frame start with the same function twice or more you couldn't.
-* Hopefully this has only a little more overhead.
+* Hopefully this has only a little more overhead. Also I use std::function because it's so much more useful and I hope overhead isn't an issue
 * 
 * I use a lot of smart pointers because it is my understanding that they are not a bad practice and don't lead to much overhead. Also will save headaches
 	if I kept forgetting to delete created objects on the heap. Last time I attempted to make a graphics engine I had a memory leak so yeah.
@@ -94,6 +94,14 @@
 	architecture of my current codebase and allows custom implementations of tweened values
 * 
 * Tweens have really big constructors because the initial values should only be set once. This is probably a bad practice but hey it's not awful in my opinion
+* 
+* I don't account for static to static collisions because they're meant to stay still so we don't really care if they're inside each other or whatever
+* 
+* When you wanna do a shared pointer of this you have to inherit public std::enable_shared_from_this< ClassName > and then call shared_from_this()
+* 
+* If you get errors from shared_from_this you likely didn't inherit its public values so make sure to do public std::enable_shared_from_this< ClassName > 
+* 
+* When non-static objects collide, any relative values they had for position will be removed. I have to add support for this which is not in scope rn
 * 
 * --- Known bugs/issues ---
 * I believe that camera rotation doesn't rotate that nicely. I think it rotates the entire scene around (0,0) which produces a weird effect.
@@ -243,7 +251,7 @@ int main() {
 	// create sprite entity
 	std::shared_ptr<Entity> sprite = std::make_shared<Entity>(); 
 
-	sprite->transform.offsetSize = glm::vec3(100.0f, 100.f, 0.0f);
+	sprite->transform.offsetSize = glm::vec3(114.234, 73.267f, 0.0f);
 	sprite->transform.offsetPosition.x = 200.0f;
 	sprite->transform.offsetPosition.y = 200.0f;
 	sprite->transform.SetZIndex(10);
@@ -264,7 +272,7 @@ int main() {
 	// add a rigid body 2D
 	std::shared_ptr<RigidBody2D> spriteRigidBody = std::make_shared<RigidBody2D>();
 	// launch angle (anti clockwise)
-	constexpr float launchAngle = glm::radians(60.0f);
+	constexpr float launchAngle = glm::radians(56.3f);
 	// how many metres to launch by
 	float launchSize = 6.0f;
 
@@ -273,7 +281,7 @@ int main() {
 
 	spriteRigidBody->velocity = velocity;
 	spriteRigidBody->isStatic = true;
-	//spriteRigidBody->gravityScale = 0.0f;
+	spriteRigidBody->gravityScale = 1.0f;
 	//spriteRigidBody->linearDrag = 0.7f; // exaggerated drag
 	
 	// add to entity
@@ -319,7 +327,7 @@ int main() {
 	// create sprite entity
 	std::shared_ptr<Entity> sprite2 = std::make_shared<Entity>();
 
-	sprite2->transform.offsetSize = glm::vec3(200.0f, 80.f, 0.0f);
+	sprite2->transform.offsetSize = glm::vec3(200.0f, 100.f, 0.0f);
 	sprite2->transform.offsetPosition.x = 500.0f;
 	sprite2->transform.offsetPosition.y = 300.0f;
 	sprite2->transform.SetZIndex(11);
@@ -440,6 +448,10 @@ int main() {
 	double launchTime = 2.0f;
 	bool launched = false;
 
+	// after this many seconds stop tracking sprite to mouse
+	double mouseStickTime = 2.0f;
+	bool sticking = true;
+
 	// set a breakpoint here if you need to check variables before they go into main loop
 	std::cout << "checkpoint" << std::endl;
 
@@ -456,11 +468,26 @@ int main() {
 
 		float deltaTime = (float)scene->deltaTime;
 
+		if (sticking && glfwGetTime() > mouseStickTime)
+		{
+			sticking = false;
+		}
+		else if(sticking) {
+			// attach sprite to mouse
+			double xPos = 0.0f;
+			double yPos = 0.0f;
+			glfwGetCursorPos(mainWindow, &xPos, &yPos);
+			yPos = scene->mainCamera->height - yPos; // convert from top-left based to bottom-left
+			sprite->transform.offsetPosition = glm::vec2((float)xPos, (float)yPos);
+		}
+
 		if (!launched && glfwGetTime() >= launchTime)
 		{
 			launched = true;
-			//spriteRigidBody->isStatic = false; // turn on
+			spriteRigidBody->isStatic = false; // turn on
 		}
+
+		
 
 		// if W pressed
 		if (glfwGetKey(mainWindow, GLFW_KEY_W) == GLFW_PRESS)
@@ -475,16 +502,15 @@ int main() {
 		if (glfwGetKey(mainWindow, GLFW_KEY_D) == GLFW_PRESS)
 			scene->mainCamera->position.x += camSpeed * deltaTime;
 
-		double xPos = 0.0f;
-		double yPos = 0.0f;
-		glfwGetCursorPos(mainWindow, &xPos, &yPos);
-		yPos = scene->mainCamera->height - yPos; // convert from top-left based to bottom-left
-		sprite->transform.offsetPosition = glm::vec2((float)xPos, (float)yPos);
+		
 
 		// rotate ellipse (revolutions are every 2*pi seconds)
 		//ellipse->transform.rotation.z = (float)glfwGetTime();
 		scene->Update();
 		
+		// print rigid body velocity
+		//std::cout << "("<< spriteRigidBody->velocity.x << ", " << spriteRigidBody->velocity.y << ")" << std::endl;
+
 		//float timeSinceStart = (float)glfwGetTime(); // time since start of window
 		//shaderProgram.setFloat("sinTime", sin(timeSinceStart) / 2.0f + 0.5f); // normalise sin(time since start of application) to be a value between 0-1 based
 		

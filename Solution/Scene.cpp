@@ -366,17 +366,28 @@ void Scene::UpdateCollisionComponent(Entity::ComponentType type, std::shared_ptr
 			// loop thru every other collider in scene
 			for (std::pair<std::string, std::shared_ptr<Collider>> itertator : _entityColliders)
 			{
-				// if the current iterated collider does not equal the current one we're checking and that iterated collider is simulated
-				if (itertator.second != boxCollider && itertator.second->attachedRigidBody != nullptr && itertator.second->attachedRigidBody->isSimulated)
+				std::shared_ptr<Collider> otherCollider = itertator.second;
+				// skip checking if the current collider is colliding with itself
+				if (otherCollider != boxCollider && 
+					// and check the iterated collider has a rigid body which is simulated (participates in physics calcs)
+					otherCollider->attachedRigidBody != nullptr && otherCollider->attachedRigidBody->isSimulated
+					// and since we don't wanna do static to static collision detection, check for that
+					&& 
+					// if either of the items are static then you will never do static to static collision detection
+					(boxCollider->attachedRigidBody->isStatic || otherCollider->attachedRigidBody->isStatic) 	)
 				{
-					// check for a collision
-					bool collision = boxCollider->CheckCollision(itertator.second, mainCamera);
+					// check for a collision and push out objects if so
+					bool collision = boxCollider->CheckCollision(itertator.second, mainCamera, true);
 					// if there was a collision set the entity's colour to red, else white
-					if (collision)
+					if (collision) {
 						boxCollider->GetParentEntity()->GetComponent<SpriteRenderer>(Entity::SpriteRenderer)->color = glm::vec3(1.0f, 0.0f, 0.0f);
+						//otherCollider->GetParentEntity()->GetComponent<SpriteRenderer>(Entity::SpriteRenderer)->color = glm::vec3(1.0f, 0.0f, 0.0f);
+					}
 					else
+					{
 						boxCollider->GetParentEntity()->GetComponent<SpriteRenderer>(Entity::SpriteRenderer)->color = glm::vec3(1.0f);
-
+						//otherCollider->GetParentEntity()->GetComponent<SpriteRenderer>(Entity::SpriteRenderer)->color = glm::vec3(1.0f);
+					}
 
 				}
 			}
