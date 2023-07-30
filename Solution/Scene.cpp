@@ -232,64 +232,84 @@ void Scene::Update()
 {
 	// get current time in seconds since start of app
 	double curTime = glfwGetTime();
-	// set delta time to be current time - last frame time 
-	deltaTime = curTime - lastFrameTime;
-	// set last frame time to current time to setup next frame
-	lastFrameTime = curTime;
-
-	// -- frame begin --
-	FireListener(EventType::Frame_Start);
-
-	// set background colour
-	glClearColor(backgroundColor.r, backgroundColor.g, backgroundColor.b, 1.0f);
-	// Make sure background is applied and reset z buffer to make depth testing work properly
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
 	
 	
-	// check for keyboard inputs
-	processKeyboardInputs();
-	// process any pending events that have been received and then returns immediately
-	glfwPollEvents();
-	// update tweens
-	tweenManager.UpdateAll();
-
-	// first loop through each opaque entity
-	for (std::pair<std::string, std::shared_ptr<Entity>> entityIterator : _opaqueEntities)
+	if (!framePaused && frameUpdateDelay != 0) {
+		// set delta time to be current time - last frame time 
+		deltaTime = curTime - lastFrameTime;
+		framePaused = true;
+	}
+	else if (frameUpdateDelay == 0)
 	{
-		std::shared_ptr<Entity> iteratedEntity = entityIterator.second;
-
-		// if the actual entity is enabled
-		if(iteratedEntity->isActive)
-			// loop through each component under entity
-			for (std::pair<Entity::ComponentType, std::shared_ptr<Component>> componentIterator : iteratedEntity->GetComponents()) 
-			{
-				// update the iterated component
-				UpdateComponent(componentIterator.first, componentIterator.second);
-			}
+		// set delta time to be current time - last frame time 
+		deltaTime = curTime - lastFrameTime;
 	}
 
-	// Now you loop through all entities with transparency 
-	for ( std::shared_ptr<Entity> entity : _sortedTransparentEntities)
-	{
-		std::shared_ptr<Entity> iteratedEntity = entity;
+	if ((framePaused && curTime - lastFrameTime > frameUpdateDelay) || !framePaused) {
+		if (frameUpdateDelay != 0) {
+			std::cout << "Passed with deltaTime of " << deltaTime << std::endl;
+		}
+		//deltaTime -= frameUpdateDelay; // remove delay from deltatime
+		// set last frame time to current time to setup next frame
+		lastFrameTime = curTime;
 
-		// if the actual entity is enabled
-		if (iteratedEntity->isActive)
-			// loop through each component under entity
-			for (std::pair<Entity::ComponentType, std::shared_ptr<Component>> componentIterator : iteratedEntity->GetComponents())
-			{
-				// update the iterated component
-				UpdateComponent(componentIterator.first, componentIterator.second);
-			}
+		
+
+		// -- frame begin --
+		FireListener(EventType::Frame_Start);
+
+		// set background colour
+		glClearColor(backgroundColor.r, backgroundColor.g, backgroundColor.b, 1.0f);
+		// Make sure background is applied and reset z buffer to make depth testing work properly
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+
+
+		// check for keyboard inputs
+		processKeyboardInputs();
+		// process any pending events that have been received and then returns immediately
+		glfwPollEvents();
+		// update tweens
+		tweenManager.UpdateAll();
+
+		// first loop through each opaque entity
+		for (std::pair<std::string, std::shared_ptr<Entity>> entityIterator : _opaqueEntities)
+		{
+			std::shared_ptr<Entity> iteratedEntity = entityIterator.second;
+
+			// if the actual entity is enabled
+			if (iteratedEntity->isActive)
+				// loop through each component under entity
+				for (std::pair<Entity::ComponentType, std::shared_ptr<Component>> componentIterator : iteratedEntity->GetComponents())
+				{
+					// update the iterated component
+					UpdateComponent(componentIterator.first, componentIterator.second);
+				}
+		}
+
+		// Now you loop through all entities with transparency 
+		for (std::shared_ptr<Entity> entity : _sortedTransparentEntities)
+		{
+			std::shared_ptr<Entity> iteratedEntity = entity;
+
+			// if the actual entity is enabled
+			if (iteratedEntity->isActive)
+				// loop through each component under entity
+				for (std::pair<Entity::ComponentType, std::shared_ptr<Component>> componentIterator : iteratedEntity->GetComponents())
+				{
+					// update the iterated component
+					UpdateComponent(componentIterator.first, componentIterator.second);
+				}
+		}
+
+
+		// swap the front buffer with the back buffer to draw any changes
+		glfwSwapBuffers(_window);
+
+		// frame has ended
+		FireListener(EventType::Frame_End);
 	}
-
 	
-	// swap the front buffer with the back buffer to draw any changes
-	glfwSwapBuffers(_window);
-
-	// frame has ended
-	FireListener(EventType::Frame_End);
 }
 
 void Scene::UpdateComponent(Entity::ComponentType type, std::shared_ptr<Component> component)
@@ -373,21 +393,26 @@ void Scene::UpdateCollisionComponent(Entity::ComponentType type, std::shared_ptr
 					otherCollider->attachedRigidBody != nullptr && otherCollider->attachedRigidBody->isSimulated
 					// and since we don't wanna do static to static collision detection, check for that
 					&& 
-					// if either of the items are static then you will never do static to static collision detection
-					(boxCollider->attachedRigidBody->isStatic || otherCollider->attachedRigidBody->isStatic) 	)
+					// make sure both of the items aren't static as you will never do static to static collision detection
+					(!(boxCollider->attachedRigidBody->isStatic && otherCollider->attachedRigidBody->isStatic)) 	)
 				{
-					// check for a collision and push out objects if so
-					bool collision = boxCollider->CheckCollision(itertator.second, mainCamera, true);
-					// if there was a collision set the entity's colour to red, else white
+					// check for a collision and push out objects if so and also bounce those objects
+					bool collision = boxCollider->CheckCollision(itertator.second, mainCamera, true, true);
+
 					if (collision) {
-						boxCollider->GetParentEntity()->GetComponent<SpriteRenderer>(Entity::SpriteRenderer)->color = glm::vec3(1.0f, 0.0f, 0.0f);
-						//otherCollider->GetParentEntity()->GetComponent<SpriteRenderer>(Entity::SpriteRenderer)->color = glm::vec3(1.0f, 0.0f, 0.0f);
+						//frameUpdateDelay = 0.5;
 					}
-					else
-					{
-						boxCollider->GetParentEntity()->GetComponent<SpriteRenderer>(Entity::SpriteRenderer)->color = glm::vec3(1.0f);
-						//otherCollider->GetParentEntity()->GetComponent<SpriteRenderer>(Entity::SpriteRenderer)->color = glm::vec3(1.0f);
-					}
+
+					// if there was a collision set the entity's colour to red, else white
+					//if (collision) {
+					//	boxCollider->GetParentEntity()->GetComponent<SpriteRenderer>(Entity::SpriteRenderer)->color = glm::vec3(1.0f, 0.0f, 0.0f);
+					//	//otherCollider->GetParentEntity()->GetComponent<SpriteRenderer>(Entity::SpriteRenderer)->color = glm::vec3(1.0f, 0.0f, 0.0f);
+					//}
+					//else
+					//{
+					//	boxCollider->GetParentEntity()->GetComponent<SpriteRenderer>(Entity::SpriteRenderer)->color = glm::vec3(1.0f);
+					//	//otherCollider->GetParentEntity()->GetComponent<SpriteRenderer>(Entity::SpriteRenderer)->color = glm::vec3(1.0f);
+					//}
 
 				}
 			}

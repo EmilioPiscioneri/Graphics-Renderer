@@ -83,6 +83,9 @@ public:
 	// run this whenever the viewport of the window changes
 	void UpdateViewport(float width, float height);
 
+	// a delay between each frame you can set. In seconds
+	float frameUpdateDelay = 0.0f;
+	bool framePaused = false;
 	
 
 	// Type of an event

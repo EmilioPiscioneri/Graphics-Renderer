@@ -103,6 +103,9 @@
 * 
 * When non-static objects collide, any relative values they had for position will be removed. I have to add support for this which is not in scope rn
 * 
+* The physics engine thingy system is tied to time not frame rate. This causes issues with things like lag where an object can clip out of scene. Fixing such
+	such issues is not something I will cover for a while
+* 
 * --- Known bugs/issues ---
 * I believe that camera rotation doesn't rotate that nicely. I think it rotates the entire scene around (0,0) which produces a weird effect.
 	A fix for this would involve moving the origin of rotation to be the axis of the camera position i think
@@ -296,10 +299,11 @@ int main() {
 	
 
 
-	auto colliderVertices = spriteCollider->GetBoundingVertices(scene->mainCamera);
+	
 
 	// -- DEBUGGING -- create 4 lines that connect each bounding box of the collider
-	/*auto colLine1 = std::make_shared<Entity>(Transform(glm::vec2(0.0f,0.0f),glm::vec3(1.0f,1.0f,0.0f)));
+	/*auto colliderVertices = spriteCollider->GetBoundingVertices(scene->mainCamera);
+	auto colLine1 = std::make_shared<Entity>(Transform(glm::vec2(0.0f,0.0f),glm::vec3(1.0f,1.0f,0.0f)));
 	colLine1->transform.SetZIndex(15);
 	auto colLineRenderer1 = std::make_shared<LineRenderer>(colliderVertices[0], colliderVertices[1]);
 	colLine1->AddComponent(Entity::LineRenderer, colLineRenderer1);
@@ -341,7 +345,18 @@ int main() {
 
 	// add a rigid body 2D
 	std::shared_ptr<RigidBody2D> spriteRigidBody2 = std::make_shared<RigidBody2D>();
+	
+	// launch angle (anti clockwise)
+	constexpr float launchAngle2 = glm::radians(180-80.3f);
+	// how many metres to launch by
+	float launchSize2 = 2.0f;
+
+	// math is simply just basic unit circle stuff * magnitude
+	glm::vec2 velocity2 = glm::vec2(cos(launchAngle2), sin(launchAngle2)) * launchSize2;
+
+	spriteRigidBody2->velocity = velocity2;
 	spriteRigidBody2->isStatic = true;
+	spriteRigidBody2->gravityScale = 1.0f;
 
 	// add to entity
 	sprite2->AddComponent(Entity::RigidBody2D, spriteRigidBody2);
@@ -445,11 +460,11 @@ int main() {
 	//*/
 	
 	// after this many seconds since window start, launch sprite
-	double launchTime = 2.0f;
+	double launchTime = 4.0f;
 	bool launched = false;
 
 	// after this many seconds stop tracking sprite to mouse
-	double mouseStickTime = 2.0f;
+	double mouseStickTime = 4.0f;
 	bool sticking = true;
 
 	// set a breakpoint here if you need to check variables before they go into main loop
@@ -485,6 +500,8 @@ int main() {
 		{
 			launched = true;
 			spriteRigidBody->isStatic = false; // turn on
+			spriteRigidBody2->isStatic = false; // turn on
+
 		}
 
 		

@@ -30,6 +30,9 @@ public:
 	// position of collider in global (pixel) coords, relative to the parent entity's transform
 	glm::vec2 position = glm::vec2(0.0f);
 
+	// mass of collider, used in collision calculations
+	float mass = 1.0f;
+
 
 	// the rigid body that this collider is attached to 
 	RigidBody2D* attachedRigidBody = nullptr;

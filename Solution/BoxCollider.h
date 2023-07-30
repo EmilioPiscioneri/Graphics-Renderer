@@ -15,7 +15,8 @@ public:
 
     // Check if there is a collision between the current collider and another input collider
     // third param is a bool that is whether or not you should push out the collided object from the current one if there was a collision
-    bool CheckCollision(std::shared_ptr<Collider> otherCollider, std::shared_ptr<OrthoCamera> camera, bool pushOut = true);
+    // fourth param is a bool that is where or not you want to bounce/inverse velocity of non-static objects that collide
+    bool CheckCollision(std::shared_ptr<Collider> otherCollider, std::shared_ptr<OrthoCamera> camera, bool pushOut = true, bool bounce = true);
 
     // returns an array of 4 bounding vertices of the box collider. Need to pass in a scene camera for calculations
     std::array<glm::vec2, 4> GetBoundingVertices(std::shared_ptr<OrthoCamera> camera);
@@ -28,6 +29,7 @@ public:
     // The 1st param: the pre calculated bounding sides of the current collider
     // The 2nd param: the pre calculated bounding sides of the other collider
     // The 3rd param: pointer to the other collider (assumed that it has an attached rigid body)
-    void PushOutCollider(std::array<float, 4> boundingSides, std::array<float, 4> otherBoundingSides, std::shared_ptr<Collider> otherCollider);
+    // The 4th param: whether or not to bounce/inverse velocity of non-static objects
+    void PushOutCollider(std::array<float, 4> boundingSides, std::array<float, 4> otherBoundingSides, std::shared_ptr<Collider> otherCollider, bool bounce);
 };
 

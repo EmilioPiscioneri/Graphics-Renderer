@@ -12,7 +12,7 @@ BoxCollider::BoxCollider(glm::vec2 position, glm::vec2 size)
 	type = Entity::BoxCollider;
 }
 
-bool BoxCollider::CheckCollision(std::shared_ptr<Collider> otherCollider, std::shared_ptr<OrthoCamera> camera, bool pushOut)
+bool BoxCollider::CheckCollision(std::shared_ptr<Collider> otherCollider, std::shared_ptr<OrthoCamera> camera, bool pushOut, bool bounce)
 {
 	// bounding sides of of this box collider
 	std::array < float, 4> boundingSides = GetBoundingSides(camera);
@@ -44,11 +44,14 @@ bool BoxCollider::CheckCollision(std::shared_ptr<Collider> otherCollider, std::s
 		{
 			// if push out then push out smh
 			if (pushOut)
-				PushOutCollider(boundingSides, otherBoundingSides, otherCollider);
+				PushOutCollider(boundingSides, otherBoundingSides, otherCollider, bounce);
+			std::cout << "The entity " << this->GetParentEntity()->GetName() << " had a collision" << std::endl;
+
 			return true; // collision occured
 		}
-		else
+		else {
 			return false; // no collision
+		}
 	}
 	default:
 		throw std::invalid_argument("You have provided a collider type which cannot be checked for collisions against bounding box collider");
@@ -110,7 +113,7 @@ std::array<float, 4> BoxCollider::GetBoundingSides(std::shared_ptr<OrthoCamera> 
 
 
 
-void BoxCollider::PushOutCollider(std::array<float, 4> boundingSides, std::array<float, 4> otherBoundingSides, std::shared_ptr<Collider> otherCollider)
+void BoxCollider::PushOutCollider(std::array<float, 4> boundingSides, std::array<float, 4> otherBoundingSides, std::shared_ptr<Collider> otherCollider, bool bounce)
 {
 	// Ok so there are static and non-static rigid bodies. Static ones (S) stay still while non-static (N) ones move around
 	// there are three types of collisions we check for: S to N, N to S, N to N
@@ -142,7 +145,11 @@ void BoxCollider::PushOutCollider(std::array<float, 4> boundingSides, std::array
 			glm::vec2 pushoutPosition = glm::vec2(0.0f);
 			// reference to non-static collider transform
 			Transform& otherColliderTransform = otherCollider->GetParentEntity()->transform;
-			
+
+			// width of non-static rect
+			float width = otherBoundingSides[1] - otherBoundingSides[0];
+			// height of non-static rect
+			float height = otherBoundingSides[3] - otherBoundingSides[2];
 
 			// now you deal with the x and y-axis independently.
 			// You have to reverse the velocity and send it out the opposite way by accounting for the difference in that opposite direction
@@ -164,7 +171,7 @@ void BoxCollider::PushOutCollider(std::array<float, 4> boundingSides, std::array
 				// If the non-static collider is closer to the left 
 				if (distToLeft < distToRight)
 					// set it to the left position of static collider - width of non-static collider to push out
-					pushoutPosition.x = boundingSides[0] - (otherBoundingSides[1] - otherBoundingSides[0]);
+					pushoutPosition.x = boundingSides[0] - width;
 				// If the non-static collider is closer to the right
 				else if (distToRight < distToLeft)
 					// set it to the right position of static collider 
@@ -172,7 +179,7 @@ void BoxCollider::PushOutCollider(std::array<float, 4> boundingSides, std::array
 				// ah shit, they are both equal distance to the edges, just push it out to the left side
 				else
 					// set it to the left position of static collider - width of non-static collider to push out
-					pushoutPosition.x = boundingSides[0] - (otherBoundingSides[1] - otherBoundingSides[0]);
+					pushoutPosition.x = boundingSides[0] - width;
 
 				// -- y-axis --
 
@@ -184,7 +191,7 @@ void BoxCollider::PushOutCollider(std::array<float, 4> boundingSides, std::array
 				// If the non-static collider is closer to the bottom
 				if (distToBottom < distToTop)
 					// set it to the top position of static collider - height of non-static collider to push out
-					pushoutPosition.y = boundingSides[2] - (otherBoundingSides[3] - otherBoundingSides[2]);
+					pushoutPosition.y = boundingSides[2] - height;
 				// If the non-static collider is closer to the top
 				else if (distToTop < distToBottom)
 					// set it to the top position of static collider 
@@ -192,21 +199,21 @@ void BoxCollider::PushOutCollider(std::array<float, 4> boundingSides, std::array
 				// ah shit, they are both equal distance to the edges, just push it out to the bottom side
 				else
 					// set it to the top position of static collider - height of non-static collider to push out
-					pushoutPosition.y = boundingSides[2] - (otherBoundingSides[3] - otherBoundingSides[3]);
+					pushoutPosition.y = boundingSides[2] - height;
 
 			}
 			else if (velocity.x == 0) // velocity has vertical (y)   velocity that is a rational number not equal to 0
 			{
 				// leave the x as the same, it doesn't move cos no velocity
 				pushoutPosition.x = otherBoundingSides[0];
-				
+
 				// inversed velocity of non-static collider
 				glm::vec2 inverseVelocity = otherCollider->attachedRigidBody->velocity * -1.0f;
 
 				// if push downwards
-				if(inverseVelocity.y < 0)
+				if (inverseVelocity.y < 0)
 					// set it to the top position of static collider - height of other collider to push out
-					pushoutPosition.y = boundingSides[2] - (otherBoundingSides[3] - otherBoundingSides[2]);
+					pushoutPosition.y = boundingSides[2] - height;
 				else // push upwards
 					// set it to the top position of static collider 
 					pushoutPosition.y = boundingSides[3];
@@ -223,7 +230,7 @@ void BoxCollider::PushOutCollider(std::array<float, 4> boundingSides, std::array
 				// if push left
 				if (inverseVelocity.x < 0)
 					// set it to the left position of static collider - width of non-static collider to push out
-					pushoutPosition.x = boundingSides[0] - (otherBoundingSides[1] - otherBoundingSides[0]);
+					pushoutPosition.x = boundingSides[0] - width;
 				else // push right
 					// set it to the right position of static collider 
 					pushoutPosition.x = boundingSides[1];
@@ -269,7 +276,7 @@ void BoxCollider::PushOutCollider(std::array<float, 4> boundingSides, std::array
 				// Now that you have two sides (the side x/y) you need to turn the velocity into a straight line relative to each corner of the rect
 				// and find an intersection. See my interactive desmos graph https://www.desmos.com/calculator/p2t0ryvfmi
 
-				
+
 				// You're basically gonna check for an intercept at each corner until you find one and then end the loop if you do
 
 				// equations for each corner are the same except P is different where P is the position of the corner relative to non-static rect.
@@ -278,10 +285,11 @@ void BoxCollider::PushOutCollider(std::array<float, 4> boundingSides, std::array
 
 				// gradient of velocity equation
 				float gradient = inverseVelocity.y / inverseVelocity.x;
-				
+
 				// the corners are 0 = BL, 1 = BR, 2 = TL, 3 = TR
-				
-				// this is the corner that the intercept from the non-static rect to the static rect was found from
+
+				// this is the corner that the intercept from the non-static (moving) rect to the static (not moving) rect was found from
+				// E.g. if you are finding an intercept from the non-static you check each corner and apply the velocity and if there's an intercept from this corner then it is the one
 				int cornerFromIntercept = 0;
 				float interceptX = 0.0f; // the x value that the inversed velocity intercepts with on the static rect
 				float interceptY = 0.0f; // the y value that the inversed velocity intercepts with on the static rect
@@ -318,20 +326,20 @@ void BoxCollider::PushOutCollider(std::array<float, 4> boundingSides, std::array
 					// indexed bounding sides are bottom and left
 					float xResult = (yLine - cornerY) / gradient + cornerX;
 					float yResult = gradient * (xLine - cornerX) + cornerY;
-					
+
 
 					// check if the results of the x or y equation is between the x and y bounds and whether in appropriate domain based on velocity direction. Direction just
 					// refers to whether it is pointing in positive or negative direction in this instance. If the results pass, there is an intercept. 
 
 					// x bewteen: left <= xResult <= right and ( (xResult <= cornerX when velocity.x < 0) or (xResult >= cornerX when velocity.x > 0) )
-					if (boundingSides[0] <= xResult && xResult <= boundingSides[1] && ( (inverseVelocity.x < 0 && xResult <= cornerX) || (inverseVelocity.x > 0 && xResult >= cornerX)))
+					if (boundingSides[0] <= xResult && xResult <= boundingSides[1] && ((inverseVelocity.x < 0 && xResult <= cornerX) || (inverseVelocity.x > 0 && xResult >= cornerX)))
 					{
 						cornerFromIntercept = cornerIndex;
 						interceptX = xResult;
 						interceptY = yLine;
 					}
 					// y bewteen: bottom <= yResult <= top and ( (yResult <= cornerY when velocity.y < 0) or (yResult >= cornerY when velocity.y > 0) )
-					else if	(boundingSides[2] <= yResult && yResult <= boundingSides[3] && ((inverseVelocity.y < 0 && yResult <= cornerY) || (inverseVelocity.y > 0 && yResult >= cornerY)))
+					else if (boundingSides[2] <= yResult && yResult <= boundingSides[3] && ((inverseVelocity.y < 0 && yResult <= cornerY) || (inverseVelocity.y > 0 && yResult >= cornerY)))
 					{
 						cornerFromIntercept = cornerIndex;
 						interceptX = xLine;
@@ -349,27 +357,24 @@ void BoxCollider::PushOutCollider(std::array<float, 4> boundingSides, std::array
 				// Ok so basically if you are moving from the bottom-right side to the intercept which is on either the bottom or right. Then the rect
 				// will still be inside when moved. To avoid this you will need to add or subtract the width/height of the rect to push it out properly.
 
-				// width of non-static rect
-				float width = otherBoundingSides[1] - otherBoundingSides[0];
-				// height of non-static rect
-				float height = otherBoundingSides[3] - otherBoundingSides[2];
+
 
 				if (cornerFromIntercept == 0) // bottom-left
 				{
 					// just positition at intercept coords
-					pushoutPosition.x = interceptX; 
+					pushoutPosition.x = interceptX;
 					pushoutPosition.y = interceptY;
 
 					// check if intercept is at left
-					if(interceptX == boundingSides[0])
+					if (interceptX == boundingSides[0])
 						pushoutPosition.x -= width; // pushout
 					// check if intercept is at bottom
 					else if (interceptY == boundingSides[2])
 						pushoutPosition.y -= height; // pushout
-				} 
+				}
 				else if (cornerFromIntercept == 1) // bottom-right
 				{
-					pushoutPosition.x = interceptX - width; 
+					pushoutPosition.x = interceptX - width;
 					pushoutPosition.y = interceptY;
 					// check if intercept is at right
 					if (interceptX == boundingSides[1])
@@ -380,7 +385,7 @@ void BoxCollider::PushOutCollider(std::array<float, 4> boundingSides, std::array
 				}
 				else if (cornerFromIntercept == 2) // top-left
 				{
-					pushoutPosition.x = interceptX ; 
+					pushoutPosition.x = interceptX;
 					pushoutPosition.y = interceptY - height;
 					// check if intercept is at left
 					if (interceptX == boundingSides[0])
@@ -391,7 +396,7 @@ void BoxCollider::PushOutCollider(std::array<float, 4> boundingSides, std::array
 				}
 				else // (cornerFromIntercept == 3) // top-right
 				{
-					pushoutPosition.x = interceptX - width; 
+					pushoutPosition.x = interceptX - width;
 					pushoutPosition.y = interceptY - height;
 					// check if intercept is at right
 					if (interceptX == boundingSides[1])
@@ -400,7 +405,9 @@ void BoxCollider::PushOutCollider(std::array<float, 4> boundingSides, std::array
 					else if (interceptY == boundingSides[3])
 						pushoutPosition.y += height; // pushout
 				}
-				
+
+
+
 
 
 
@@ -700,9 +707,436 @@ void BoxCollider::PushOutCollider(std::array<float, 4> boundingSides, std::array
 
 
 
+
 			// set the new position of the 
 			otherColliderTransform.offsetPosition = pushoutPosition;
 			otherColliderTransform.relativePosition = glm::vec2(0.0f);
+
+			// if don't wanna bounce, end here
+			if (!bounce) {
+				return;
+			}
+
+			// else, wanna bounce
+			// now check what side the pushed out position of the non-static object is on and inverse the velocity depending on what side is hit.
+
+			// if left is touching right side (hit right side) or if right is touching left side (hit left side)
+			if (pushoutPosition.x == boundingSides[1] || pushoutPosition.x + width == boundingSides[0])
+				otherCollider->attachedRigidBody->velocity.x *= -1; // inverse on x-axis
+			// if bottom is touching top (hit top) or if top is touching bottom (hit bottom)
+			if (pushoutPosition.y == boundingSides[3] || pushoutPosition.y + height == boundingSides[2])
+				otherCollider->attachedRigidBody->velocity.y *= -1; // inverse on y-axis
+
+
+		}
+		// for non-static to static just run the same function but in reverse, I'm not repeating the same code again 
+		else if (!attachedRigidBody->isStatic && otherCollider->attachedRigidBody->isStatic)
+			// make it static to non-static and then call the push out collider function
+			std::static_pointer_cast<BoxCollider>(otherCollider)->PushOutCollider(otherBoundingSides, boundingSides, shared_from_this(), bounce);
+		// non-static to non-static collisions
+		else if (!attachedRigidBody->isStatic && !otherCollider->attachedRigidBody->isStatic)
+		{
+			// this is going to be similar to non-static to static collision when the velocities are both not 0
+			// My math theory is here https://www.desmos.com/calculator/b5rmoh8vle
+			// its a bit of a mess tho ngl
+
+			
+			// get reference to rigid body's velocity
+
+			glm::vec2& thisVelocity = this->attachedRigidBody->velocity;
+			glm::vec2& otherVelocity = otherCollider->attachedRigidBody->velocity;
+
+			// the new pushed out position of the bounding boxes (bottom-left based positioning as per usual)
+			glm::vec2 thisPushoutPosition = glm::vec2();
+			glm::vec2 otherPushoutPosition = glm::vec2(0.0f);
+			// reference to non-static collider transform
+			Transform& thisColliderTransform = this->GetParentEntity()->transform;
+			Transform& otherColliderTransform = otherCollider->GetParentEntity()->transform;
+			
+			
+
+			
+
+			// width of rects
+			float thisWidth = boundingSides[1] - boundingSides[0];
+			float otherWidth = otherBoundingSides[1] - otherBoundingSides[0];
+			// height of rects
+			float thisHeight = boundingSides[3] - boundingSides[2];
+			float otherHeight = otherBoundingSides[3] - otherBoundingSides[2];
+
+
+
+			// new velocities of colliders. Formula I got from chatGPT so yeah 
+			
+			// grab the masses of the two colliders
+			float& thisMass = this->mass;
+			float& otherMass = otherCollider->mass;
+
+			glm::vec2 thisNewVelocity = ((thisMass - otherMass) * thisVelocity + 2 * otherMass * otherVelocity) / (thisMass + otherMass);
+			glm::vec2 otherNewVelocity = ((otherMass - thisMass) * otherVelocity + 2 * thisMass * thisVelocity) / (thisMass + otherMass);
+
+			/*
+
+			// First you need to establish what the two potential sides that this velocity can be pushed out to. E.g. if velocity is 1,1 then you would
+			// be looking at top or right because the x and y are positive. If you had -2, 5 as a velocity you would be looking at left and top sides for
+			// a potential location to be pushed out to. Once you have the side you can turn it into an equation e.g. x = 2 and x = 4 where this is two
+			// vertical lines that show the left and right side
+
+
+
+			// this is an equation x = xLine which represents a horizontal side (left/right) of a rect that can be checked for intersection
+			float thisXLine = 0.0f;
+			float otherXLine = 0.0f;
+			// this is an equation y = yLine which represents a vertical side (bottom/top) of a rect that can be checked for intersection
+			float thisYLine = 0.0f;
+			float otherYLine = 0.0f;
+
+			// determine what the lines are. The lines of this rect will always be coordinates that are on the other rect and vise verca
+
+			if (thisNewVelocity.x < 0) // negative: pushed out to left
+			{
+				thisXLine = otherBoundingSides[0]; // left of collider
+			}
+			else if (thisNewVelocity.x > 0) // positive: push out to right
+			{
+				thisXLine = otherBoundingSides[1]; // right of collider
+			}
+
+			if (thisNewVelocity.y < 0) // negative: pushed out to bottom
+			{
+				thisYLine = otherBoundingSides[2]; // bottom of collider
+			}
+			else if (thisNewVelocity.y > 0) // positive: push out to top
+			{
+				thisYLine = otherBoundingSides[3]; // top of collider
+			}
+
+			if (otherNewVelocity.x < 0) // negative: pushed out to left
+			{
+				otherXLine = boundingSides[0]; // left of collider
+			}
+			else if (otherNewVelocity.x > 0) // positive: push out to right
+			{
+				otherXLine = boundingSides[1]; // right of collider
+			}
+
+			if (otherNewVelocity.y < 0) // negative: pushed out to bottom
+			{
+				otherYLine = boundingSides[2]; // bottom of collider
+			}
+			else if (otherNewVelocity.y > 0) // positive: push out to top
+			{
+				otherYLine = boundingSides[3]; // top of collider
+			}
+
+
+			// Now that you have two sides (the side x/y) you need to turn the velocity into a straight line relative to each corner of the rect
+			// and find an intersection. See my interactive desmos graph https://www.desmos.com/calculator/p2t0ryvfmi
+
+
+			// You're basically gonna check for an intercept at each corner until you find one and then end the loop if you do
+
+			// equations for each corner are the same except P is different where P is the position of the corner relative to non-static rect.
+			// so you have y = (V.x/V.y) (x-P.x) + P.y
+			// and also x = (y-p.y)/(v.x/v.y) + p.x
+
+			// gradients of velocity equation
+			float thisGradient = thisNewVelocity.y / thisNewVelocity.x;
+			float otherGradient = otherNewVelocity.y / otherNewVelocity.x;
+
+			// the corners are 0 = BL, 1 = BR, 2 = TL, 3 = TR
+
+			// this is the corner that the intercept from this rect to the other rect was found from
+			int thisCornerFromIntercept = 0;
+			glm::vec2 thisIntercept(0.0f,0.0f); // the coord that the velocity intercepts with on the other rect
+
+			// the corner from which the intercept is checkedfrom
+			glm::vec2 thisCorner(0.0f, 0.0f);
+
+			// this rect calculations
+			for (int cornerIndex = 0; cornerIndex < 4; cornerIndex++)
+			{
+				// x and y position of the corner (no need for vec2), temp because they are not final
+				float thisTempCornerX = 0.0f;
+				float thisTempCornerY = 0.0f;
+
+				// if statement is easier to read than switch case. It is also a small if statement
+
+				if (cornerIndex == 0) // bottom-left
+				{
+					thisTempCornerX = boundingSides[0]; // left
+					thisTempCornerY = boundingSides[2]; // bottom
+				}
+				else if (cornerIndex == 1) // bottom-right
+				{
+					thisTempCornerX = boundingSides[1]; // right
+					thisTempCornerY = boundingSides[2]; // bottom
+				}
+				else if (cornerIndex == 2) // top-left
+				{
+					thisTempCornerX = boundingSides[0]; // left
+					thisTempCornerY = boundingSides[3]; // top
+				}
+				else // == 3, top-right
+				{
+					thisTempCornerX = boundingSides[1]; // right
+					thisTempCornerY = boundingSides[3]; // top
+				}
+
+				// indexed bounding sides are bottom and left
+				float xResult = (thisYLine - thisTempCornerY) / thisGradient + thisTempCornerX;
+				float yResult = thisGradient * (thisXLine - thisTempCornerX) + thisTempCornerY;
+
+
+				// check if the results of the x or y equation is between the x and y bounds and whether in appropriate domain based on velocity direction. Direction just
+				// refers to whether it is pointing in positive or negative direction in this instance. If the results pass, there is an intercept. 
+
+				// x bewteen: left <= xResult <= right and ( (xResult <= cornerX when velocity.x < 0) or (xResult >= cornerX when velocity.x > 0) )
+				if (otherBoundingSides[0] <= xResult && xResult <= otherBoundingSides[1] && ((thisNewVelocity.x < 0 && xResult <= thisTempCornerX) || (thisNewVelocity.x > 0 && xResult >= thisTempCornerX)))
+				{
+					thisCornerFromIntercept = cornerIndex;
+					thisCorner = glm::vec2(thisTempCornerX, thisTempCornerY);
+					thisIntercept = glm::vec2(xResult, thisYLine);
+				}
+				// y bewteen: bottom <= yResult <= top and ( (yResult <= cornerY when velocity.y < 0) or (yResult >= cornerY when velocity.y > 0) )
+				else if (otherBoundingSides[2] <= yResult && yResult <= otherBoundingSides[3] && ((thisNewVelocity.y < 0 && yResult <= thisTempCornerY) || (thisNewVelocity.y > 0 && yResult >= thisTempCornerY)))
+				{
+					thisCornerFromIntercept = cornerIndex;
+					thisCorner = glm::vec2(thisTempCornerX, thisTempCornerY);
+					thisIntercept = glm::vec2(thisXLine, yResult);
+				}
+
+			}
+
+			// the corners are 0 = BL, 1 = BR, 2 = TL, 3 = TR
+
+			// this is the corner that the intercept from this rect to the other rect was found from
+			int otherCornerFromIntercept = 0;
+			// the corner from which the intercept is checkedfrom
+			glm::vec2 otherCorner(0.0f,0.0f);
+			glm::vec2 otherIntercept(0.0f, 0.0f); // the coord that the velocity intercepts with on the other rect
+
+			// other rect calculations
+			for (int cornerIndex = 0; cornerIndex < 4; cornerIndex++)
+			{
+				// x and y position of the corner (no need for vec2)
+				float otherTempCornerX = 0.0f;
+				float otherTempCornerY = 0.0f;
+
+				// if statement is easier to read than switch case. It is also a small if statement
+
+				if (cornerIndex == 0) // bottom-left
+				{
+					otherTempCornerX = otherBoundingSides[0]; // left
+					otherTempCornerY = otherBoundingSides[2]; // bottom
+				}
+				else if (cornerIndex == 1) // bottom-right
+				{
+					otherTempCornerX = otherBoundingSides[1]; // right
+					otherTempCornerY = otherBoundingSides[2]; // bottom
+				}
+				else if (cornerIndex == 2) // top-left
+				{
+					otherTempCornerX = otherBoundingSides[0]; // left
+					otherTempCornerY = otherBoundingSides[3]; // top
+				}
+				else // == 3, top-right
+				{
+					otherTempCornerX = otherBoundingSides[1]; // right
+					otherTempCornerY = otherBoundingSides[3]; // top
+				}
+
+				// indexed bounding sides are bottom and left
+				float xResult = (otherYLine - otherTempCornerY) / otherGradient + otherTempCornerX;
+				float yResult = otherGradient * (otherXLine - otherTempCornerX) + otherTempCornerY;
+
+
+				// check if the results of the x or y equation is between the x and y bounds and whether in appropriate domain based on velocity direction. Direction just
+				// refers to whether it is pointing in positive or negative direction in this instance. If the results pass, there is an intercept. 
+
+				// x bewteen: left <= xResult <= right and ( (xResult <= cornerX when velocity.x < 0) or (xResult >= cornerX when velocity.x > 0) )
+				if (boundingSides[0] <= xResult && xResult <= boundingSides[1] && ((otherNewVelocity.x < 0 && xResult <= otherTempCornerX) || (otherNewVelocity.x > 0 && xResult >= otherTempCornerX)))
+				{
+					otherCornerFromIntercept = cornerIndex;
+					otherCorner = glm::vec2(otherTempCornerX, otherTempCornerY);
+					otherIntercept = glm::vec2(xResult , otherYLine);
+				}
+				// y bewteen: bottom <= yResult <= top and ( (yResult <= cornerY when velocity.y < 0) or (yResult >= cornerY when velocity.y > 0) )
+				else if (boundingSides[2] <= yResult && yResult <= boundingSides[3] && ((otherNewVelocity.y < 0 && yResult <= otherTempCornerY) || (otherNewVelocity.y > 0 && yResult >= otherTempCornerY)))
+				{
+					otherCornerFromIntercept = cornerIndex;
+					otherCorner = glm::vec2(otherTempCornerX, otherTempCornerY);
+					otherIntercept = glm::vec2(otherXLine , yResult);
+				}
+
+			}
+
+			// ok now we have an intercept location and what corner that intercept came from
+			// now we have to move the current position which is bottom-left based to that intercept location.
+			// think of it like if the intercept was found using the top-right corner. We need to the position the current rect so that the top-right
+			// corner is in the position we want it to be. This can be done by just minusing width or height to work back to bottom-left
+
+			// note that when you're pushing out something from a corner. It will still be inside it if you move it to a side that is corrseponding with corner.
+			// Ok so basically if you are moving from the bottom-right side to the intercept which is on either the bottom or right. Then the rect
+			// will still be inside when moved. To avoid this you will need to add or subtract the width/height of the rect to push it out properly.
+
+			// magnitude is hypotenuse or Sqrt( a^2 + b^2 )
+			// the magnitude is used so that if one velocity has a higher magnitude it will be pushed out more than the other
+			float thisMagnitude = glm::sqrt((thisNewVelocity.x * thisNewVelocity.x) + (thisNewVelocity.y * thisNewVelocity.y));
+			float otherMagnitude = glm::sqrt((otherNewVelocity.x * otherNewVelocity.x) + (otherNewVelocity.y * otherNewVelocity.y));
+
+
+			// now get the difference from the rect's corner position to the pushout position 
+			glm::vec2 thisDifference = thisIntercept - thisCorner;
+			glm::vec2 otherDifference = otherIntercept - otherCorner;
+
+
+			// new pushout position using my formula that I conjured up using black magic and a bit of shots in the dark and theory that made sense to me at the time but I forgot
+			thisPushoutPosition = thisCorner + thisDifference;
+			// add to x axis only
+			thisPushoutPosition.x += ((otherCorner.x + otherDifference.x) - (thisCorner.x + thisDifference.x)) * otherMagnitude / (thisMagnitude + otherMagnitude);
+
+			otherPushoutPosition = otherCorner + otherDifference;
+			// add to x axis only
+			otherPushoutPosition.x += ((thisCorner.x + thisDifference.x) - (otherCorner.x + otherDifference.x)) * thisMagnitude / (thisMagnitude + otherMagnitude);
+
+
+			if (thisCornerFromIntercept == 0) // bottom-left
+			{
+				//// check if intercept is at left
+				//if (thisIntercept.x == boundingSides[0])
+				//	thisPushoutPosition.x -= thisWidth; // pushout
+				//// check if intercept is at bottom
+				//else if (thisIntercept.y == boundingSides[2])
+				//	thisPushoutPosition.y -= thisHeight; // pushout
+			}
+			else if (thisCornerFromIntercept == 1) // bottom-right
+			{
+				thisPushoutPosition.x -= thisWidth;
+				//// check if intercept is at right
+				//if (thisIntercept.x == boundingSides[1])
+				//	thisPushoutPosition.x += thisWidth; // pushout
+				//// check if intercept is at bottom
+				//else if (thisIntercept.y == boundingSides[2])
+				//	thisPushoutPosition.y -= thisHeight; // pushout
+			}
+			else if (thisCornerFromIntercept == 2) // top-left
+			{
+				thisPushoutPosition.y -= thisHeight;
+				// check if intercept is at left
+				//if (thisIntercept.x == boundingSides[0])
+				//	thisPushoutPosition.x -= thisWidth; // pushout
+				//// check if intercept is at top
+				//else if (thisIntercept.y == boundingSides[3])
+				//	thisPushoutPosition.y += thisHeight; // pushout
+			}
+			else // (cornerFromIntercept == 3) // top-right
+			{
+				thisPushoutPosition.x -= thisWidth;
+				thisPushoutPosition.y -= thisHeight;
+				//// check if intercept is at right
+				//if (thisIntercept.x == boundingSides[1])
+				//	thisPushoutPosition.x += thisWidth; // pushout
+				//// check if intercept is at top
+				//else if (thisIntercept.y == boundingSides[3])
+				//	thisPushoutPosition.y += thisHeight; // pushout
+			}
+
+			if (otherCornerFromIntercept == 0) // bottom-left
+			{
+				//// check if intercept is at left
+				//if (otherIntercept.x == boundingSides[0])
+				//	otherPushoutPosition.x -= otherWidth; // pushout
+				//// check if intercept is at bottom
+				//else if (otherIntercept.y == boundingSides[2])
+				//	otherPushoutPosition.y -= otherHeight; // pushout
+			}
+			else if (otherCornerFromIntercept == 1) // bottom-right
+			{
+				otherPushoutPosition.x -= otherWidth;
+				//// check if intercept is at right
+				//if (otherIntercept.x == boundingSides[1])
+				//	otherPushoutPosition.x += otherWidth; // pushout
+				//// check if intercept is at bottom
+				//else if (otherIntercept.y == boundingSides[2])
+				//	otherPushoutPosition.y -= otherHeight; // pushout
+			}
+			else if (otherCornerFromIntercept == 2) // top-left
+			{
+				otherPushoutPosition.y -= otherHeight;
+				//// check if intercept is at left
+				//if (otherIntercept.x == boundingSides[0])
+				//	otherPushoutPosition.x -= otherWidth; // pushout
+				//// check if intercept is at top
+				//else if (otherIntercept.y == boundingSides[3])
+				//	otherPushoutPosition.y += otherHeight; // pushout
+			}
+			else // (cornerFromIntercept == 3) // top-right
+			{
+				otherPushoutPosition.x -= otherWidth;
+				otherPushoutPosition.y -= otherHeight;
+				//// check if intercept is at right
+				//if (otherIntercept.x == boundingSides[1])
+				//	otherPushoutPosition.x += otherWidth; // pushout
+				//// check if intercept is at top
+				//else if (otherIntercept.y == boundingSides[3])
+				//	otherPushoutPosition.y += otherHeight; // pushout
+			}
+
+			*/
+
+
+			// I had to use fucking chat gpt to find out what "collision resolution" or "collision response" was and the implementation because i spent too much time dicking around
+			// I am ashamed i did such a thing
+
+
+			// Step 2: Calculate overlap
+			float overlap_x = std::min(boundingSides[1] - otherBoundingSides[0], otherBoundingSides[1] - boundingSides[0]);
+			float overlap_y = std::min(boundingSides[3]- otherBoundingSides[2], otherBoundingSides[3] - boundingSides[2]);
+
+			// Step 3: Find MTV: The MTV is the smallest vector that, when applied to one of the AABBs, will separate them completely and eliminate the overlap. 
+			glm::vec2 mtv(0.0f);
+			if (overlap_x < overlap_y) {
+				if (boundingSides[1] < otherBoundingSides[0]) {
+					mtv = glm::vec2(overlap_x, 0);
+				}
+				else {
+					mtv = glm::vec2(-overlap_x, 0);
+				}
+			}
+			else {
+				if (boundingSides[3] < otherBoundingSides[2]) {
+					mtv = glm::vec2(0, overlap_y);
+				}
+				else {
+					mtv = glm::vec2(0, -overlap_y);
+				}
+			}
+
+			// Step 4: Resolve the collision
+
+
+			glm::vec2 displacement(mtv.x * 0.5f, mtv.y * 0.5f);
+			thisPushoutPosition = glm::vec2(boundingSides[0] + displacement.x, boundingSides[2]+ displacement.y);
+			otherPushoutPosition = glm::vec2(otherBoundingSides[0] - displacement.x, otherBoundingSides[2] - displacement.y);
+
+
+			
+			// set the new positions of the colliders
+			thisColliderTransform.offsetPosition = thisPushoutPosition;
+			thisColliderTransform.relativePosition = glm::vec2(0.0f);
+			otherColliderTransform.offsetPosition = otherPushoutPosition;
+			otherColliderTransform.relativePosition = glm::vec2(0.0f);
+			
+			
+			// if don't wanna bounce, end here
+			if (!bounce) {
+				return;
+			}
+
+			// set the new velocities of the colliders
+			thisVelocity = thisNewVelocity;
+			otherVelocity = otherNewVelocity;
 
 		}
 		break;
